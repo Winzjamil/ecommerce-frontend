@@ -1,42 +1,36 @@
 import { FaEyeSlash, FaEye, FaArrowLeft } from 'react-icons/fa6';
-import { GlobalContext } from '../context/GlobalContext';
-import { useAuth } from '../context/AuthContext';
-import { useContext, useState } from 'react';
+import { userAuth } from '../features/userSlice';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { IoMdLogIn } from 'react-icons/io';
 import useForm from './Hooks';
 import Input from './Input';
 import Form from './Form';
 
-// import { jwtDecode } from 'jwt-decode';
-
 function LoginForm() {
-  const { navigate } = useContext(GlobalContext);
-  const { loginUser } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const { formData, changeHandler, submitHandler, errors } = useForm({
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { formData, changeHandler, submitHandler } = useForm({
     initialVal: { email: '', password: '' },
     onSubmit: async (formData) => {
       try {
-        const res = await fetch('http://localhost:8080/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-        const data = await res.json();
+        const result = await dispatch(
+          userAuth({ type: 'login', credentials: formData })
+        ).unwrap();
 
-        if (!res.ok) {
-          alert(data.error);
-          return;
-        }
-        loginUser(data.user);
-        alert(`Login success: ${data.user.fullName} - Role: ${data.user.role}`);
-        if (data.user.role === 'user') {
+        alert(
+          result.message,
+          `Name: ${result.user.fullName} Role: ${result.user.role}`
+        );
+        if (result.user.role === 'user') {
           navigate('/');
-        } else if (data.user.role === 'admin') {
+        } else {
           navigate('/adminDashboard');
         }
       } catch (err) {
-        console.error('logging in failed', err);
+        console.error(err.message);
       }
     },
   });
@@ -101,3 +95,22 @@ function LoginForm() {
 }
 
 export default LoginForm;
+// try {
+//   const res = await fetch('http://localhost:8080/login', {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify(formData),
+//   });
+//   const data = await res.json();
+//   // to save user to local storage
+//   loginUser(data.user);
+
+//   alert(`Login success: ${data.user.fullName} - Role: ${data.user.role}`);
+//   if (data.user.role === 'user') {
+//     navigate('/');
+//   } else if (data.user.role === 'admin') {
+//     navigate('/adminDashboard');
+//   }
+// } catch (err) {
+//   console.error('logging in failed', err);
+// }

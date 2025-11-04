@@ -1,10 +1,9 @@
 import { Link, NavLink } from 'react-router-dom';
-import { GlobalContext } from '../context/GlobalContext';
-import { useContext } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useSelector } from 'react-redux';
 function AdminDashboard() {
-  const { user } = useAuth();
-  const { userCount } = useContext(GlobalContext);
+  const { user } = useSelector((state) => state.user);
+  // const { userCount } = useContext(GlobalContext);
+
   return (
     <div className="min-h-screen flex">
       <aside className="w-64 bg-gray-800 text-white p-4 space-y-4">
@@ -22,7 +21,12 @@ function AdminDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 shadow rounded">
             <p className="text-gray-600">Total Users</p>
-            <p className="text-2xl font-bold text-blue-600">{userCount}</p>
+            {/* <p className="text-2xl font-bold text-blue-600">{userCount}</p> */}
+            {user.role !== 'admin' && (
+              <p className="text-2xl font-bold text-blue-600">
+                {user.fullName}
+              </p>
+            )}
           </div>
           <div className="bg-white p-4 shadow rounded">
             <p className="text-gray-600">Orders</p>

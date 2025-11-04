@@ -7,7 +7,7 @@ function Input({
   placeholder,
   onChange,
   label,
-  className,
+
   id,
   autoComplete,
   required,

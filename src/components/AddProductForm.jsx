@@ -1,16 +1,21 @@
-import { useContext, useState, useRef } from 'react';
+import { useContext, useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import Input from './Input';
-import { GlobalContext } from '../context/GlobalContext';
+import { productHandle } from '../features/productSlice';
 import { FaTrash, FaArrowLeft } from 'react-icons/fa6';
-import { useAuth } from '../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
 
 function AddProductForm() {
-  const { products, setProducts } = useContext(GlobalContext);
+  const dispatch = useDispatch();
+  const { items: products } = useSelector((state) => state.product);
+  useEffect(() => {
+    dispatch(productHandle({ type: 'fetch' }));
+  }, [dispatch]);
+
   const [previewUrl, setPreviewUrl] = useState(null);
   const [errors, setErrors] = useState([]);
   const fileInputRef = useRef(null);
-  const { user } = useAuth();
+  const { user } = useSelector((state) => state.user);
   const [formData, setFormData] = useState({
     price: '',
     description: '',
@@ -93,23 +98,7 @@ function AddProductForm() {
       quantity: formData.quantity,
       image: previewUrl,
     };
-
-    try {
-      const productResponse = await fetch('http://localhost:8080/product', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProduct),
-      });
-
-      if (!productResponse.ok) {
-        alert('Error to save product');
-        return;
-      }
-      const result = await productResponse.json();
-      setProducts((prev) => [...prev, result]);
-    } catch (err) {
-      console.error(' Error saving products', err);
-    }
+    dispatch(productHandle({ type: 'add', newProduct: newProduct }));
     setPreviewUrl(null);
     setFormData({
       price: '',
@@ -130,26 +119,8 @@ function AddProductForm() {
       'Are you sure you want to delete this product?'
     );
     if (!confirmDelete) return;
-    try {
-      const productToRemove = [...products].filter(
-        (item) => item._id !== itemId
-      );
-      if (!productToRemove) {
-        alert('no product to remove');
-        return;
-      }
-      const item = await fetch(`http://localhost:8080/product/${itemId}`, {
-        method: 'DELETE',
-      });
 
-      if (!item.ok) {
-        const errorMessage = await item.json();
-        throw new Error(`Failed to delete product: ${errorMessage}`);
-      }
-      setProducts(productToRemove);
-    } catch (err) {
-      console.error('Error while removing item:', err);
-    }
+    dispatch(productHandle({ type: 'delete', id: itemId }));
   };
 
   return (

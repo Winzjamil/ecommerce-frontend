@@ -2,7 +2,7 @@ import { FaTrash, FaArrowLeft } from 'react-icons/fa6';
 import { FaSave, FaEdit } from 'react-icons/fa';
 import Input from './Input';
 import { LuCirclePlus } from 'react-icons/lu';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { TbCancel } from 'react-icons/tb';
 import Select from 'react-select';
@@ -15,6 +15,7 @@ function UserManager() {
     title: '',
     description: '',
   });
+
   const [blockedRoles, setBlockedRoles] = useState([]);
   const [addedRoles, setAddedRoles] = useState([]);
 
@@ -300,6 +301,7 @@ function UserManager() {
                 label="Title"
                 className="border border-blue-700 p-1.5 text-center rounded-sm outline-none bg-white focus:border-orange-400  w-72"
               />
+
               <div className="w-full">
                 <label className="block mt-1 font-bold" htmlFor="Description">
                   Description

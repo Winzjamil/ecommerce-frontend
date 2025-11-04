@@ -1,14 +1,17 @@
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa6';
-import { GlobalContext } from '../context/GlobalContext';
-import { useContext, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import useForm from './Hooks';
 import Input from './Input';
 import Form from './Form';
+import { userAuth } from '../features/userSlice';
+import { useDispatch } from 'react-redux';
 
 function SignUp() {
-  const { navigate } = useContext(GlobalContext);
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { formData, changeHandler, submitHandler, errors } = useForm({
     initialVal: {
       fullName: '',
@@ -18,17 +21,10 @@ function SignUp() {
     },
     onSubmit: async (formData) => {
       try {
-        const response = await fetch('http://localhost:8080/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          console.error('server error', data);
-          return;
-        }
-        alert(`${data.message}`);
+        const result = await dispatch(
+          userAuth({ type: 'register', credentials: formData })
+        ).unwrap();
+        alert(result.messsage || 'account created successfully');
         navigate('/login');
       } catch (err) {
         console.error('error saving data', err);

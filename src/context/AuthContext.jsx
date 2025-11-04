@@ -1,32 +1,28 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+// import { useState, useEffect, createContext, useContext } from 'react';
+// import { GlobalContext } from './GlobalContext';
+// const AuthContext = createContext();
 
-const AuthContext = createContext();
-export const AuthContextProvider = ({ children }) => {
-  const [user, setUser] = useState([null]);
+// export const AuthContextProvider = ({ children }) => {
+//   const { user, setUser } = useContext(GlobalContext);
 
-  useEffect(() => {
-    const userCredential = JSON.parse(localStorage.getItem('user'));
-    setUser(userCredential);
-  }, []);
-
-  const loginUser = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData) || '[]');
-    setUser(userData);
-  };
-  const logoutUser = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-  };
-  return (
-    <AuthContext.Provider
-      value={{
-        loginUser,
-        logoutUser,
-        user,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
-export const useAuth = () => useContext(AuthContext);
+//   const loginUser = (userData) => {
+//     localStorage.setItem('user', JSON.stringify(userData) || '[]');
+//     setUser(userData);
+//   };
+//   const logoutUser = () => {
+//     localStorage.removeItem('user');
+//     setUser(null);
+//   };
+//   return (
+//     <AuthContext.Provider
+//       value={{
+//         loginUser,
+//         logoutUser,
+//         user,
+//       }}
+//     >
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
+// export const useAuth = () => useContext(AuthContext);

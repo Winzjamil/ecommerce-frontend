@@ -1,4 +1,5 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
+
 function useForm({ initialVal = {}, onSubmit }) {
   const [formData, setFormData] = useState(initialVal);
   const [errors, setErrors] = useState({});
@@ -38,6 +39,7 @@ function useForm({ initialVal = {}, onSubmit }) {
   const changeHandler = (e) => {
     const { name, value } = e.target;
     let processedValue = value;
+    // to make the input always start with capital letter
     if (name === 'fullName' && value) {
       processedValue = value
         .split(' ')

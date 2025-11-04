@@ -1,70 +1,71 @@
-import { useContext, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaCartShopping, FaArrowLeft } from 'react-icons/fa6';
 import { FaSearch } from 'react-icons/fa';
-import { GlobalContext } from '../../context/GlobalContext';
-import { useAuth } from '../../context/AuthContext';
-import { NavLink } from 'react-router-dom';
-import Card from '../../components/Cards/ProductCard';
-import CustomSelect from '../../components/Custom/CustomSelect';
+
+import { logOutUser } from '../features/userSlice';
+import { useNavigate, NavLink } from 'react-router-dom';
+import Card from './Cards/ProductCard';
+import CustomSelect from './Custom/CustomSelect';
 import { IoMdLogIn } from 'react-icons/io';
+import { useSelector, useDispatch } from 'react-redux';
+import { handleCart } from '../features/cartSlice';
+import { productHandle } from '../features/productSlice';
 
 function Product() {
-  const { products, carts, setCarts } = useContext(GlobalContext);
-  const { user, logoutUser } = useAuth();
   const [sortedCat, setSortedCat] = useState([]);
   const [isSortedByCat, setIsSortedByCat] = useState(false);
-
   const [sortedPrice, setSortedPrice] = useState([]);
   const [isSorted, setIsSorted] = useState(false);
 
-  const [showMessage, setShowMessage] = useState(false);
+  const [showMessage, setShowMessage] = useState(null);
 
   const [searchResult, setSearchResult] = useState([]);
   const [searchValue, setsearchValue] = useState('');
-  const [isOpen, setIsOpen] = useState(true);
+
+  const user = useSelector((state) => state.user.user);
+  const {
+    items: products,
+    loading,
+    error,
+  } = useSelector((state) => state.product);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  // const [isOpen, setIsOpen] = useState(true);
   /////////////////////////////////////////////////////////////////////
 
+  useEffect(() => {
+    dispatch(productHandle({ type: 'fetch' }));
+  }, [dispatch]);
+
+  const logoutHandler = () => {
+    dispatch(logOutUser());
+    navigate('/');
+  };
+
   const cartHandler = async (productId) => {
-    const productToAdd = [...products].find((p) => p._id === productId);
-    if (!productToAdd) {
-      alert('item not found');
-      return;
-    }
-    if (!isInCart(productId)) {
-      const productWithQuantity = {
-        ...productToAdd,
-        unitPrice: productToAdd.price,
-        itemQuantity: 1,
-      };
+    try {
+      const result = await dispatch(
+        handleCart({ type: 'addToCart', id: productId })
+      ).unwrap();
 
-      try {
-        const response = await fetch('http://localhost:8080/cart', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(productWithQuantity),
-        });
-        const result = await response.json();
-        if (!response.ok) {
-          alert('something went wrong saving this item');
-        }
-        setCarts(result.data);
-      } catch (err) {
-        console.error('error saving cart', err);
-      }
-      setShowMessage(true);
-      setTimeout(() => setShowMessage(false), 3000);
-    } else {
-      alert('item is already in cart');
+      setShowMessage(`(${result.title}) Added to cart succesfully`);
+
+      setTimeout(() => {
+        setShowMessage(null);
+      }, 3000);
+    } catch (err) {
+      alert('items is already in cart');
     }
   };
 
-  const isInCart = (itemId) => {
-    return carts.some((item) => item._id === itemId);
-  };
+  if (loading) return <p>loading...</p>;
+  if (error) return <p>Error:{error}</p>;
 
   const searchHandler = (e) => {
-    const toSearch = [...products].filter((product) =>
-      product.title.toLowerCase().includes(e.target.value.trim().toLowerCase())
+    const query = e.target.value.trim().toLowerCase();
+    const toSearch = products.filter((product) =>
+      product.title.toLowerCase().includes(query)
     );
     setSearchResult(toSearch);
     setsearchValue(e.target.value.trim());
@@ -75,7 +76,7 @@ function Product() {
       setIsSortedByCat(false);
       return;
     }
-    const sortedCat = [...products].filter(
+    const sortedCat = products.filter(
       (p) => p.category === selectedOption.value
     );
     if (sortedCat.length === 0) {
@@ -87,12 +88,12 @@ function Product() {
   };
 
   const handleSortChange = (selectedOption) => {
-    console.log('selected option', selectedOption);
     if (!selectedOption) {
       setSortedPrice(products);
       setIsSorted(false);
       return;
     }
+
     const sortedPrice = [...products].sort((a, b) =>
       selectedOption.value === 'low' ? a.price - b.price : b.price - a.price
     );
@@ -165,7 +166,7 @@ function Product() {
             </>
           ) : (
             <button
-              onClick={() => logoutUser()}
+              onClick={() => logoutHandler()}
               className="border-none p-1 rounded-md  bg-white  cursor-pointer text-center"
             >
               Logout
@@ -226,7 +227,7 @@ function Product() {
         )}
         {showMessage && (
           <div className="fixed p-4.5 rounded-2.5 bg-green-400">
-            Item added successfully!
+            {showMessage}
           </div>
         )}
       </div>
