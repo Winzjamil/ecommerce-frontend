@@ -1,34 +1,35 @@
-import ProtectedRoute from './routes/ProtectedRoutes';
-import AddProductForm from './components/AddProductForm';
-// import { GlobalContextProvider } from './context/GlobalContext';
-// import { AuthContextProvider } from './context/AuthContext';
-import AdminDashboard from './components/AdminDashboard';
-import LoginForm from './components/LoginForm';
-import Product from './components/Product';
-import SignUp from './components/Signup';
-import UserManager from './components/UserManager';
-import { Route, Routes } from 'react-router-dom';
-import Carts from './components/Carts';
 import './App.css';
+import AppRoutes from './routes/AppRoutes';
+
 function App() {
   return (
     <>
-      <Routes>
-        <Route
-          path="/carts"
-          element={
-            <ProtectedRoute>
-              <Carts />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/adminDashboard" element={<AdminDashboard />} />
-        <Route path="/userManager" element={<UserManager />} />
-        <Route path="/form" element={<AddProductForm />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/signUp" element={<SignUp />} />
-        <Route path="/" element={<Product />} />
-      </Routes>
+      <AppRoutes />
+
+      {/* <Routes>
+        <Route path={routes.SIGN_UP} element={<SignUp />} />
+        <Route path={routes.LOGIN} element={<LoginForm />} />
+
+        <Route path={routes.USER_MANAGER} element={<UserManager />} />
+        <Route path="/confirm" element={<CartConfirmation />} />
+        <Route path={routes.REGISTER} element={<Register />} />
+        <Route path="/address" element={<AddressForm />} />
+
+        <Route element={<MainLayout />}>
+          <Route
+            path={routes.CART}
+            element={
+              <ProtectedRoute>
+                <Carts />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/review" element={<ReviewProductCard />} />
+          <Route path={routes.ADD_PRODUCT} element={<AddProductForm />} />
+          <Route path="/" element={<ProductList />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+      </Routes> */}
     </>
   );
 }

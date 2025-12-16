@@ -10,6 +10,7 @@ import Select from 'react-select';
 function UserManager() {
   const [modalOpen, setModalOpen] = useState(false);
   const [edit, setEdit] = useState(null);
+
   const [newRole, setNewRole] = useState({
     role: '',
     title: '',
@@ -17,21 +18,26 @@ function UserManager() {
   });
 
   const [blockedRoles, setBlockedRoles] = useState([]);
+
   const [addedRoles, setAddedRoles] = useState([]);
 
   useEffect(() => {
     const fetchRolesData = async () => {
-      const storedRoles = await fetch('http://localhost:8080/roles');
-      const roles = await storedRoles.json();
-      setAddedRoles(roles.data);
+      try {
+        const storedRoles = await fetch('http://localhost:8080/roles');
+        const roles = await storedRoles.json();
+        setAddedRoles(roles.data);
 
-      const res = await fetch('http://localhost:8080/block');
-      const result = await res.json();
-      const blockedRoles = result.data[0].blocked;
-      if (!blockedRoles) {
-        alert('soemething went wrong');
+        const res = await fetch('http://localhost:8080/block');
+        const result = await res.json();
+        const blockedRoles = result.data[0].blocked;
+        // if (!blockedRoles) {
+        //   alert('soemething went wrong');
+        // }
+        setBlockedRoles(blockedRoles);
+      } catch (err) {
+        console.Error(err.message);
       }
-      setBlockedRoles(blockedRoles);
     };
     fetchRolesData();
   }, []);
@@ -44,7 +50,7 @@ function UserManager() {
     const res = await fetch('http://localhost:8080/block', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ blocked }),
+      body: JSON.stringify(blocked),
     });
 
     const result = await res.json();
@@ -68,7 +74,6 @@ function UserManager() {
       if (!res.ok) throw new Error('Failed to delete role');
       setAddedRoles([...addedRoles].filter((r) => r._id !== roleId));
     } catch (err) {
-      alert('Error deleting role from database');
       console.error(err);
     }
   };
@@ -76,15 +81,14 @@ function UserManager() {
   //////////////////////////////////////////////////////////////////////
   const addHandler = async () => {
     const { role, title, description } = newRole;
-
     if ((!role.trim(), !title.trim(), !description.trim())) {
       alert('all fields are required');
       return;
     }
-
-    if (edit !== null) {
-      const updated = [...addedRoles];
+    if (edit) {
+      let updated = [...addedRoles];
       updated[edit] = { ...updated[edit], ...newRole };
+      console.log('updated', updated[edit]);
 
       if (blockedRoles.includes(updated[edit].role)) {
         alert(`Blocked ${updated[edit].role} Cannot Update`);
@@ -102,17 +106,10 @@ function UserManager() {
           body: JSON.stringify(newRole),
         }
       );
-
-      if (!res.ok) {
-        console.error('Failed to update role:', res.statusText);
-        alert(`failed to update${updated[edit]}`);
-        return;
-      }
       const savedEdit = await res.json();
+
       setAddedRoles((prev) =>
-        prev.map((roleItem) =>
-          roleItem._id === savedEdit.data._id ? savedEdit.data : roleItem
-        )
+        prev.map((r) => (r._id === savedEdit.data._id ? savedEdit.data : r))
       );
     } else {
       const isDuplicate = [...addedRoles].some((r) => r.role === role);
@@ -153,7 +150,7 @@ function UserManager() {
     });
   };
 
-  const role = ['user', 'editor', 'business affiliate', 'huhuuhuhu'];
+  const role = ['user', 'seller'];
 
   const optionsData = role.map((r) => ({
     value: r,
@@ -167,28 +164,33 @@ function UserManager() {
           <FaArrowLeft />
         </NavLink>
       </div>
-      {addedRoles &&
-        addedRoles.map((r, i) => {
-          return (
-            <div
-              key={i}
-              className="flex flex-col items-center justify-center p-1  bg-blue-400  gap-1.5  "
-            >
-              <div className="flex gap-1 flex-col rounded-md  text-white justify-center items-center">
-                <label className="bg-red-600">
-                  <input
-                    type="checkbox"
-                    value={r.role}
-                    onChange={() => handleCheckboxChange(r.role)}
-                    checked={blockedRoles.includes(r.role)}
-                  />
+      {addedRoles
+        ? addedRoles.map((r, i) => {
+            return (
+              <div
+                key={i}
+                className="flex  items-center flex-wrap  bg-yellow-300   "
+              >
+                <div className="flex flex-wrap gap-1.5   ml-2 justify-center items-center">
+                  <div>
+                    <input
+                      type="checkbox"
+                      value={r.role}
+                      onChange={() => handleCheckboxChange(r.role)}
+                      checked={blockedRoles.includes(r.role)}
+                    />
+                  </div>
 
-                  {r.role.charAt(0).toUpperCase() + r.role.slice(1)}
-                </label>
+                  <div>
+                    <label>
+                      {r.role.charAt(0).toUpperCase() + r.role.slice(1)}
+                    </label>
+                  </div>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        : null}
 
       <table className="table-fixed mt-8   w-full">
         <thead>
@@ -247,7 +249,7 @@ function UserManager() {
                 </button>
               )}
             </div>
-            <div className="bg-white p-4 rounded-md flex gap-3 flex-col ">
+            <div className="bg-black p-4 rounded-md flex gap-3 flex-col ">
               <div>
                 <label htmlFor="Role" className="block font-bold ">
                   Role
@@ -296,7 +298,7 @@ function UserManager() {
                 id="Title"
                 name="title"
                 required
-                value={newRole.title || ''}
+                value={newRole.title}
                 onChange={changeHandler}
                 label="Title"
                 className="border border-blue-700 p-1.5 text-center rounded-sm outline-none bg-white focus:border-orange-400  w-72"
@@ -313,7 +315,7 @@ function UserManager() {
                   value={newRole.description || ''}
                   placeholder="Enter Product Description Here.."
                   onChange={changeHandler}
-                  className="max-w-96 w-full  text-base h-24 p-2.5 rounded-md  outline-none text-center border border-blue-700 focus:border-orange-400  "
+                  className="max-w-96 w-full  text-base h-24 p-2.5 rounded-md text-white outline-none text-center border border-blue-700 focus:border-orange-400  "
                 ></textarea>
               </div>
 

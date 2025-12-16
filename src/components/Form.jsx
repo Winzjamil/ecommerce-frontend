@@ -1,13 +1,13 @@
 import React from 'react';
 
-function Form({ header, children, onSubmit }) {
+function Form({ header, children, onSubmit, className }) {
   return (
     <form
       onSubmit={onSubmit}
-      className="rounded-md  max-w-xl flex flex-col justify-center items-center  bg-black p-4  shadow-sm "
+      className="flex flex-wrap items-center justify-center  "
     >
-      <h2 className="text-white mb-2">{header}</h2>
-      <div className="flex gap-3 flex-col bg-white p-2 rounded-md shadow-md">
+      <div className="bg-gradient-to-tr from-black/80 to-white/80 border max-w-120 border-white  px-8 py-4 rounded-md">
+        <h2 className="text-white font-light w-full text-center">{header}</h2>
         {children}
       </div>
     </form>

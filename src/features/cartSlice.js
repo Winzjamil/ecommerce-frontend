@@ -1,33 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
+import { API_URL } from '../enums';
+//thunk
 export const handleCart = createAsyncThunk(
   'cart/handleCart',
-  async ({ action, type, id }, { getState, rejectWithValue }) => {
+  async ({ type, id, data }, { rejectWithValue }) => {
     try {
-      const state = getState();
-      const cartList = state.cart.items.find((c) => c._id === id);
-
-      if (type === 'addToCart') {
-        const items = state.product.items.find((p) => p._id === id);
-        if (!items) {
-          return rejectWithValue('no products found');
-        }
-        const updatedCart = {
-          ...items,
-          quantity: 1,
-          stock: items.quantity,
-          unitPrice: items.price,
-        };
-
-        const alreadyInCart = state.cart.items.some((c) => c._id === id);
-        if (alreadyInCart) {
-          return;
-        }
-
-        const cartRes = await fetch('http://localhost:8080/cart', {
+      if (type === 'post') {
+        const cartRes = await fetch(`${API_URL}/cart`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedCart),
+          body: JSON.stringify(data),
         });
 
         const result = await cartRes.json();
@@ -35,46 +17,26 @@ export const handleCart = createAsyncThunk(
       }
 
       if (type === 'fetch') {
-        const response = await fetch('http://localhost:8080/cart');
+        const response = await fetch(`${API_URL}/carts${id}`);
         const result = await response.json();
-        return result.data; // array of cart items
+        return result.data;
       }
 
       if (type === 'update') {
-        if (!cartList) {
-          return rejectWithValue('item not found');
-        }
-        const updatedCart = { ...cartList };
-        if (action === 'add') {
-          updatedCart.quantity = Number(updatedCart.quantity || 1) + 1;
-          updatedCart.stock = Number(updatedCart.stock - 1);
-        } else {
-          updatedCart.quantity = Number(updatedCart.quantity || 1) - 1;
-          updatedCart.stock = Number(updatedCart.stock + 1);
-        }
-        if (updatedCart.quantity <= 0) {
-          const response = await fetch(`http://localhost:8080/cart/${id}`, {
-            method: 'DELETE',
-          });
-          if (!response.ok) {
-            throw new Error('Failed to delete cart item');
-          }
-          return { _id: id, deleted: true };
-        }
-        updatedCart.price = updatedCart.unitPrice * updatedCart.quantity;
-
-        const response = await fetch(`http://localhost:8080/cart/${id}`, {
-          method: 'PUT',
+        const response = await fetch(`${API_URL}/cart/${id}`, {
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedCart),
+          body: JSON.stringify(data),
+        });
+        const result = await response.json();
+        return result.data;
+      }
+      if (type === 'del') {
+        await fetch(`${API_URL}/cart/${id}`, {
+          method: 'DELETE',
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to update cart item');
-        }
-
-        const result = await response.json();
-        return result;
+        return { _id: id };
       }
       throw new Error('invalid type');
     } catch (err) {
@@ -91,7 +53,7 @@ const setError = (state, action) => {
   state.loading = false;
   state.error = action.payload;
 };
-// 🔹 Slice
+
 const cartSlice = createSlice({
   name: 'cart',
   initialState: {
@@ -104,33 +66,30 @@ const cartSlice = createSlice({
     builder
       .addCase(handleCart.pending, setLoading)
       .addCase(handleCart.rejected, setError)
-
       .addCase(handleCart.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
-
-        const operationType = action.meta.arg.type; // ← this is the "type" passed to thunk
-
-        if (operationType === 'addToCart') {
+        const operationType = action.meta.arg.type;
+        if (operationType === 'post') {
           state.items.push(action.payload);
         } else if (operationType === 'fetch') {
           state.items = action.payload;
         } else if (operationType === 'update') {
           const updatedItem = action.payload;
 
-          if (updatedItem.deleted) {
-            state.items = state.items.filter(
-              (item) => item._id !== updatedItem._id
-            );
-            return;
-          }
-          const index = state.items.findIndex(
+          const index = [...state.items].findIndex(
             (item) => item._id === updatedItem._id
           );
-
           if (index !== -1) {
-            state.items[index] = updatedItem;
+            state.items[index] = {
+              ...state.items[index],
+              ...updatedItem,
+            };
           }
+        } else if (operationType === 'del') {
+          state.items = [...state.items].filter(
+            (item) => item._id !== action.payload._id
+          );
         }
       });
   },

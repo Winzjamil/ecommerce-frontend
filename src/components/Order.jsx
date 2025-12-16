@@ -1,7 +1,7 @@
 import React from 'react';
 
-function User() {
+function Order() {
   return <div></div>;
 }
 
-export default User;
+export default Order;
