@@ -4,7 +4,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = getAuthData('token');
   const user = getAuthData('user');
   const isAuthenticated = !!token;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to={routes.LOGIN} replace />;
 
   if (allowedRoles && !allowedRoles.includes(user.role))
     // is to check if the user role is allowed to access the page

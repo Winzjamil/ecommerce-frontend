@@ -13,14 +13,13 @@ function Input({
 }) {
   return (
     <>
-      <div className="flex flex-wrap w-full mx-auto items-center justify-center text-white text-sm gap-1  ">
+      <div className="flex flex-wrap w-full mx-auto items-center justify-center text-white text-xs gap-1  ">
         <label
-          className=" font-medium text-md text-stone-600 flex w-full block text-white/90  gap-0.5 leading-none "
+          className="   text-stone-300 flex w-full items-center  gap-0.5 "
           htmlFor={id}
         >
-          <span className=" text-xs mr-0.5 text-red-600">
-            <FaAsterisk />
-          </span>
+          <FaAsterisk size={8} color="red" />
+
           {label}
         </label>
 
@@ -31,7 +30,7 @@ function Input({
           value={value}
           placeholder={placeholder}
           onChange={onChange}
-          className="border border-white/20 text-xs w-full p-1.5 placeholder:text-xs text-white placeholder:text-white/70 placeholder:font-light bg-transparent rounded-md outline-none focus:border-blue-200 to-stone-300  "
+          className="w-full p-1.5 placeholder:text-xs placeholder:text-white/70 placeholder:font-light bg-black rounded-md outline-none focus:border focus:border-blue-200   "
           autoComplete={autoComplete}
           id={id}
         />

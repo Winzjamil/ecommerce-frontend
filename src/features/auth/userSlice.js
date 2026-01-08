@@ -1,11 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { API_URL, setUser, getAuthData } from '../enums';
+import { API_URL, setUser } from '../../enums';
 
 export const userAuth = createAsyncThunk(
   'user/userAuth',
   async ({ credentials, type }, { rejectWithValue }) => {
     const url = `${API_URL}/${type}`;
-    console.log('TYPE', type, 'URL', url);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -15,7 +14,7 @@ export const userAuth = createAsyncThunk(
     const result = await res.json();
 
     if (!res.ok) {
-      return rejectWithValue(res.message);
+      return rejectWithValue(result.message || 'Request failed');
     }
 
     if (type === 'login') {
@@ -24,32 +23,17 @@ export const userAuth = createAsyncThunk(
     }
 
     if (res.ok) {
-      return { type: type, user: result.user };
-    }
-
-    if (type === 'address') {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-      if (res.ok) {
-        const result = await res.json();
-        return { type, data: result.data };
-      } else {
-        return rejectWithValue(res.message);
-      }
+      return { type, user: result.user };
     }
   }
 );
 const initialState = {
-  user: getAuthData('user'),
-  address: '',
+  user: null,
   loading: false,
   error: null,
 };
 const userSlice = createSlice({
-  name: 'user',
+  name: 'auth',
   initialState,
   reducers: {
     logOutUser: (state) => {
@@ -62,13 +46,10 @@ const userSlice = createSlice({
     builder
       .addCase(userAuth.fulfilled, (state, action) => {
         state.loading = false;
-        const { type, user, data } = action.payload;
-        console.log('data', data);
+        const { type, user } = action.payload;
+
         if (type && type === 'login') {
           state.user = user;
-        }
-        if (type && type === 'address') {
-          state.address = data;
         }
       })
       .addCase(userAuth.pending, (state) => {
@@ -77,7 +58,7 @@ const userSlice = createSlice({
       })
       .addCase(userAuth.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || action.error.message;
+        state.error = action.payload;
       });
   },
 });

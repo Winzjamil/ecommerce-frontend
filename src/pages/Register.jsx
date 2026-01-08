@@ -1,32 +1,33 @@
-import React, { useRef, useState } from 'react';
-
 import Form from '../components/Form';
 import Input from '../components/Input';
+import { useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useForm } from '../components/Hooks';
+import { userAuth } from '../features/auth/userSlice';
+import { routes, SELLER_ACCESS } from '../enums';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa6';
-import { useDispatch, useSelector } from 'react-redux';
-import { resetPreview } from '../features/slice';
-import { userAuth } from '../features/userSlice';
-import { routes } from '../enums';
-function Register() {
-  const dispatch = useDispatch();
-  const preview = useSelector((state) => state.product.preview);
 
+function Register() {
+  const ref = useRef();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const ref = useRef();
-  const ShowHandler = () => {
-    setShowPassword((prev) => !prev);
-  };
-  const { formData, submitHandler, changeHandler, errors } = useForm({
+
+  const {
+    formData,
+    submitHandler,
+    changeHandler,
+    errors,
+    preview,
+    setPreview,
+  } = useForm({
     initialVal: {
       storeName: '',
-      userId: '',
       profile: null,
       account: '',
       password: '',
-      role: 'seller',
+      role: SELLER_ACCESS,
       confirmPassword: '',
       email: '',
       userName: '',
@@ -35,32 +36,30 @@ function Register() {
     onSubmit: async ({ formData }) => {
       const updatedFormData = {
         ...formData,
-        profile: preview,
+        profile: preview.profile[0],
       };
-      // console.log(updatedFormData);
-      // return;
+
       try {
         await dispatch(
-          userAuth({ type: routes.LOGIN, credentials: updatedFormData })
+          userAuth({ type: 'register', credentials: updatedFormData })
         ).unwrap();
 
         alert('Thanks, you are now registered');
         navigate(routes.LOGIN);
-
-        await dispatch(resetPreview());
-        ref.current.value = '' || null;
+        ref.current.value = '';
+        setPreview(!preview);
       } catch (err) {
         console.error('error saving data', err);
       }
     },
   });
 
+  const ShowHandler = () => {
+    setShowPassword((prev) => !prev);
+  };
   return (
-    <div className=" fixed  min-h-screen  bg-black flex flex-wrap justify-center w-full items-center   mx-auto ">
-      <NavLink
-        to={routes.HOME}
-        className="w-full text-white self-start pl-4 pt-2"
-      >
+    <div className="  min-h-screen  bg-blue-700 flex flex-col gap-20 w-full items-center    ">
+      <NavLink to={routes.HOME} className="w-full text-white  pl-4 pt-2">
         <FaArrowLeft />
       </NavLink>
       <Form onSubmit={submitHandler}>
@@ -96,20 +95,6 @@ function Register() {
         </div>
         <div className="w-full flex gap-8 mb-4">
           <Input
-            label="User Id"
-            name="userId"
-            value={formData.userId}
-            onChange={changeHandler}
-            placeholder="Enter your Id"
-            autoComplete="given-id"
-            id="store-id"
-          />
-          {errors.userId && (
-            <span className="text-red-500  font-light text-xs absolute">
-              {errors.userId}
-            </span>
-          )}
-          <Input
             label="Account No."
             name="account"
             value={formData.account}
@@ -124,17 +109,18 @@ function Register() {
               {errors.userName}
             </span>
           )}
+          <Input
+            label="Email"
+            id="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={changeHandler}
+            placeholder="Email"
+            autoComplete="email"
+          />
         </div>
-        <Input
-          label="Email"
-          id="Email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={changeHandler}
-          placeholder="Email"
-          autoComplete="email"
-        />
+
         <div className="w-full flex gap-8 mt-4">
           <div className="relative w-full">
             <Input
@@ -149,7 +135,7 @@ function Register() {
             />
             <span
               onClick={ShowHandler}
-              className=" absolute right-3 top-1/2 pt-0.5  text-gray-700"
+              className=" absolute right-3 top-1/2 pt-0.5  text-white"
             >
               {showPassword ? <FaEye /> : <FaEyeSlash />}
             </span>
@@ -168,12 +154,12 @@ function Register() {
             <span className="text-red-600">{errors.confirmPassword}</span>
           )} */}
         </div>
-        <div className=" flex flex-wrap mt-5 w-full items-center justify-center ">
+        <div className=" flex flex-col mt-5 gap-1 w-full items-center text-xs text-gray-200  justify-center ">
           <label
             htmlFor="File"
-            className=" w-full mt-1 text-white text-center font-semibold"
+            className=" bg-black/60 cursor-pointer p-1 rounded  text-center text-stone-300 "
           >
-            Choose Profile
+            Add Logo
           </label>
           <input
             type="file"
@@ -183,36 +169,36 @@ function Register() {
             onChange={changeHandler}
             accept="image/*"
             ref={ref}
-            className="p-2.5  rounded-md cursor-pointer text-stone-400 border border-white w-1/2 "
+            className="p-2 hidden rounded-md cursor-pointer   "
           />
 
-          <div className=" flex justify-center  p-1 mt-2 w-full ">
-            {preview && (
+          <div className="  flex justify-center items-center  p-1  w-full ">
+            {preview.profile ? (
               <div className="h-auto shadow-md border  border-blue-200 rounded-sm p-1 bg-stone-500">
                 <img
-                  src={preview}
+                  src={preview.profile[0]}
                   alt="preview"
                   className="rounded-md w-25 h-25 bg-sky-200 b p-0.5 "
                 />
               </div>
-            )}
+            ) : null}
           </div>
         </div>
-        <div className="w-full flex justify-between pl-2 gap-2 items-center">
-          <p className=" text-blue-500 hover:text-blue-700">
+        <div className="w-full flex justify-between pl-2  items-center text-sm">
+          <span className=" text-blue-400 hover:text-blue-700">
             Already an account?
-          </p>
+          </span>
           <NavLink
             to="/login"
-            className="p-0.5 w-30 text-center hover:bg-stone-400  shadow-md cursor-pointer rounded-xl"
+            className="py-0.5 px-2 hover:bg-stone-400  border text-white border-sky-200/60 cursor-pointer "
           >
             Login
           </NavLink>
         </div>
-        <div className="w-full text-center">
+        <div className="w-full text-center text-white mt-4 text-sm">
           <button
             type="submit"
-            className=" bg-black text-white border boerder-white w-40 cursor-pointer mt-2 p-0.5 rounded-xl shadow-xl"
+            className=" bg-black/80 text-white border-b boerder-b-white px-4 cursor-pointer mt-2 py-1 rounded-md"
           >
             Submit
           </button>

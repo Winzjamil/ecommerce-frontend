@@ -1,31 +1,20 @@
 import { configureStore } from '@reduxjs/toolkit';
-import cartReducer from '../features/cartSlice.js';
-import { apiSlice } from '../features/api/apiSlice.js';
-import userReducer from '../features/userSlice.js';
-import { setupListeners } from '@reduxjs/toolkit/query';
+
+import userReducer from '../features/auth/userSlice.js';
 import productReducer from '../features/productSlice.js';
-
-// const store = configureStore({
-//   reducer: {
-//     cart: cartReducer,
-//     user: userReducer,
-//     [apiSlice.reducerPath]: apiSlice.reducer,
-//   },
-
-//   middleware: (getDefaultMiddleware) =>
-//     getDefaultMiddleware().concat(apiSlice.middleware),
-// });
-// setupListeners(store.dispatch);
-// export default store;
-// cart: cartReducer,
-//     user: userReducer,
+import { apiSlice } from '../services/apiSlice.js';
+import { setupListeners } from '@reduxjs/toolkit/query';
 
 const store = configureStore({
   reducer: {
-    cart: cartReducer,
-    user: userReducer,
+    auth: userReducer,
     product: productReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer,
   },
+
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware),
 });
+setupListeners(store.dispatch);
 
 export default store;

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { setPreview } from '../../features/slice';
-import { useDispatch } from 'react-redux';
+
 export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
   const [formData, setFormData] = useState(initialVal);
   const [errors, setErrors] = useState({});
+  const [preview, setPreview] = useState({});
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -16,7 +16,6 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
     onSubmit({ formData, type });
     setFormData(initialVal);
   };
-  const dispatch = useDispatch();
 
   const validate = () => {
     const regex = /^[a-zA-Z\s]+$/;
@@ -101,21 +100,10 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
       reader.readAsDataURL(objFile);
     });
 
-  const addressHandleChange = () => {};
-
   const changeHandler = async (e) => {
     const { name, value, type, files } = e.target;
-
-    const nameValue = [
-      'userName',
-      'fullName',
-      'storeName',
-      'title',
-      'description',
-    ];
-
+    const nameValue = ['userName', 'storeName', 'title'];
     let processedValue = value;
-
     if (nameValue.includes(name) && value) {
       processedValue = value
         .split(' ')
@@ -123,34 +111,37 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
           (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
         )
         .join(' ');
-    } else if (name === 'size' && value.trim()) {
+    } else if (name === 'size' && value) {
       processedValue = value
-
         .split(',')
         .map((word) => word.trim().toUpperCase());
-    } else if (name === 'userId' && value.trim().toLowerCase())
-      processedValue = value;
-    if (type === 'file') {
-      const selectedFile = files[0];
-      // const fileList = Array.from(file);
+    } else if (type === 'file') {
+      const selectedFiles = Array.from(files);
+      const reviews = await Promise.all(
+        selectedFiles.map((file) => fileToBase64(file))
+      );
+
       setFormData((prev) => ({
         ...prev,
-        [name]: selectedFile,
+        [name]: selectedFiles,
       }));
-      const bsFile = await fileToBase64(selectedFile);
 
-      await dispatch(setPreview(bsFile || null));
-    } else {
-      setFormData((prev) => ({
+      setPreview((prev) => ({
         ...prev,
-        [name]: processedValue,
+        [name]: reviews || null,
       }));
-
-      setErrors((err) => ({
-        ...err,
-        [e.target.name]: null,
-      }));
+      return;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: processedValue,
+    }));
+
+    setErrors((err) => ({
+      ...err,
+      [name]: null,
+    }));
   };
 
   return {
@@ -159,5 +150,7 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
     changeHandler,
     errors,
     setFormData,
+    preview,
+    setPreview,
   };
 };

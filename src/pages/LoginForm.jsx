@@ -1,5 +1,12 @@
-import { FaEyeSlash, FaEye, FaArrowLeft } from 'react-icons/fa6';
-import { userAuth } from '../features/userSlice';
+import {
+  FaEyeSlash,
+  FaEye,
+  FaArrowLeft,
+  FaGoogle,
+  FaFacebook,
+  FaEnvelope,
+} from 'react-icons/fa6';
+import { userAuth } from '../features/auth/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -13,6 +20,8 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [error, setError] = useState(null);
+
   const { formData, changeHandler, submitHandler, errors } = useForm({
     initialVal: { email: '', password: '' },
     type: 'login',
@@ -21,16 +30,22 @@ function LoginForm() {
         const res = await dispatch(
           userAuth({ type: 'login', credentials: formData })
         ).unwrap();
-        alert('hellow  gago');
+
+        alert(` Welcome ${res.user.userName} `);
         if (res.user.role == SELLER_ACCESS) {
           navigate(routes.ADD_PRODUCT);
         } else if (res.user.role === ADMIN_ACCESS) {
-          navigate('/adminDashboard');
+          navigate(routes.ADMIN_DASHBOARD);
         } else {
           navigate(routes.HOME);
         }
       } catch (err) {
-        console.error(err.message);
+        const message = err?.message || err || 'Login failed';
+        setError(message);
+
+        setTimeout(() => {
+          setError(null);
+        }, 5000);
       }
     },
   });
@@ -40,7 +55,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="h-screen w-full bg-black flex flex-wrap pb-40 justify-center  items-center">
+    <div className="h-screen w-full bg-blue-700 flex flex-wrap pb-40 justify-center  items-center">
       <NavLink
         to={routes.HOME}
         className="text-white self-start w-full pt-4 pl-4"
@@ -89,23 +104,55 @@ function LoginForm() {
 
             <span
               onClick={showPasswordHandler}
-              className="absolute right-3 top-1/2 pt-0.5 text-white/80"
+              className="absolute right-3 cursor-pointer top-1/2 pt-0.5 text-white/80"
             >
               {showPassword ? <FaEye /> : <FaEyeSlash />}
             </span>
           </div>
         </div>
-        <div className="flex mt-4 justify-center items-center ">
+        {error && <p className="text-xs text-red-400 font-light">{error}</p>}
+        <div className="flex mt-4 justify-center flex-wrap text-sm  text-white items-center ">
           <button
             onClick={(e) => {
               e.stopPropagation();
             }}
             type="submit"
-            className=" flex flex-wrap items-center justify-center cursor-pointer gap-1 bg-gradient-to-tr  from-blue-800 to-stone-600 text-white font-light  p-0.5 w-40  rounded-xl shadow-xl"
+            className=" flex items-center cursor-pointer gap-1 border-b border-b-whit bg-black/80  rounded-full  font-light  py-0.5 px-3"
           >
             <IoMdLogIn />
             Login
           </button>
+          <p className="w-full font-light text-xs text-blue-500/70">
+            Continue with
+          </p>
+          <div className="flex gap-4 items-center">
+            <button className=" cursor-pointer bg-black px-2 py-0.5  flex items-center gap-0.5 ">
+              <FaGoogle className="text-blue-500 text-xs" />
+              <span className="text-red-400 ">o</span>
+              <span className="text-yellow-300">o</span>
+              <span className="text-blue-500">g</span>
+              <span className="text-green-500">l</span>
+              <span className="text-red-400">e</span>
+            </button>
+            <button className=" cursor-pointer py-0.5 flex  bg-black px-2  items-center  text-blue-600 ">
+              <FaFacebook className=" pr-0.5 " />
+              <span className="text-blue-600">a</span>
+              <span className="text-blue-600">c</span>
+              <span className="text-blue-600">e</span>
+              <span className="text-blue-600">b</span>
+              <span className="text-blue-600">o</span>
+              <span className="text-blue-600">o</span>
+              <span className="text-blue-600">k</span>
+            </button>
+            <button className=" py-0.5 cursor-pointer bg-black px-2   flex items-center gap-0.5 text-lg font-extralight ">
+              <FaEnvelope className="text-blue-600 text-xs" />
+              <span className="text-red-400 font-semibold ">E</span>
+              <span className="text-yellow-300">m</span>
+              <span className="text-blue-500">a</span>
+              <span className="text-green-500">i</span>
+              <span className="text-red-400">l</span>
+            </button>
+          </div>
         </div>
 
         {/* <button

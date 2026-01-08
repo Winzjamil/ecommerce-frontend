@@ -1,31 +1,38 @@
+import {
+  useGetCartQuery,
+  useRemoveFromCartMutation,
+  useUpdateCartItemMutation,
+  useFetchAddressQuery,
+  useAddOrderMutation,
+} from '../features/shop/shopApi';
 import ProductList from './ProductList';
 import { useEffect, useState } from 'react';
-import { handleCart } from '../features/cartSlice';
+import { useNavigate } from 'react-router-dom';
+import { paymentMethods, routes } from '../enums';
 import CartCard from '../components/Cards/CartCard';
-import { useSelector, useDispatch } from 'react-redux';
 
 function Carts() {
-  const carts = useSelector((state) => state.cart.items);
-  const products = useSelector((state) => state.product.items);
-  const user = useSelector((state) => state.user.user);
-  const dispatch = useDispatch();
+  const { data: carts = [] } = useGetCartQuery();
+  console.log('carts', carts);
+  const { data: address = [] } = useFetchAddressQuery();
   const [subTotal, setSubTotal] = useState(0);
-  const [totalItems, setTotalItems] = useState(0);
-
+  const [remove] = useRemoveFromCartMutation();
+  const [update] = useUpdateCartItemMutation();
+  const [placeOrder] = useAddOrderMutation();
   const [itemCheck, setItemCheck] = useState([]);
-
-  console.log('chck', itemCheck);
+  const [totalItems, setTotalItems] = useState(0);
+  const [error, setError] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const navigate = useNavigate();
   const updateQuanHandle = async (action, cartId) => {
     const item = carts.find((cart) => cart._id === cartId);
-
     if (!item) {
       alert('no item found');
       return;
     }
     const updatedItem = { ...item };
-
     if (action === 'add') {
-      if (updatedItem.stock === 0) {
+      if (updatedItem.stock <= 0) {
         alert('sorry we are out of stock');
         return;
       }
@@ -41,23 +48,25 @@ function Carts() {
       const confirmDel = window.confirm(
         'Are you sure  to remove this item from your cart?'
       );
+
       if (confirmDel) {
-        await dispatch(
-          handleCart({ type: 'del', data: updatedItem, id: updatedItem._id })
-        );
+        remove(cartId);
       } else {
-        return;
+        updatedItem.quantity = 1;
+        updatedItem.unitPrice = item.unitPrice;
       }
     }
 
-    await dispatch(
-      handleCart({ type: 'update', data: updatedItem, id: updatedItem._id })
-    );
+    try {
+      await update({
+        id: cartId,
+        updatedData: updatedItem,
+      }).unwrap();
+    } catch (err) {
+      console.error('failed to update cart item', err.data.message || err);
+    }
   };
-
-  useEffect(() => {
-    dispatch(handleCart({ type: 'fetch', id: user.id }));
-  }, [dispatch]);
+  // to get  sub total price
   useEffect(() => {
     const total = carts.reduce((acc, item) => {
       return acc + Number(item.unitPrice);
@@ -76,33 +85,76 @@ function Carts() {
       alert('no item found');
       return;
     }
-    await dispatch(handleCart({ type: 'del', id: id }));
+    const confirmDel = window.confirm('are you sure to remove this item');
+    if (!confirmDel) {
+      return;
+    }
+    remove(id);
   };
+
   const handleChange = (id) => {
     setItemCheck((prev) =>
       prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
     );
   };
-  const orderHandle = () => {
-    alert('heyy its mee order handle');
+
+  const orderHandle = async () => {
+    const selectedItems = carts.filter((cart) => itemCheck.includes(cart._id));
+
+    if (selectedItems.length <= 0) {
+      alert('Please select items to order');
+      return;
+    }
+
+    const defaultAddress = address.find((add) => add.isDefault === true);
+    if (!defaultAddress) {
+      alert('please choose shipping address');
+
+      navigate(routes.ADDRESS);
+      return;
+    }
+    const orderPayload = {
+      items: selectedItems.map((item) => ({
+        productId: item._id,
+        quantity: item.quantity,
+        image: item.image,
+      })),
+      paymentMethod: paymentMethod,
+      shippingAddress: defaultAddress,
+    };
+
+    try {
+      await placeOrder(orderPayload).unwrap();
+      alert('Order placed successfully!');
+
+      carts.filter(
+        (cart) => cart._id !== selectedItems.map((item) => item._id)
+      );
+
+      setItemCheck([]);
+      navigate(routes.DASH_BOARD);
+    } catch (err) {
+      console.error(err);
+      alert(err?.data?.message || 'Failed to place order');
+    }
   };
+
   return (
-    <div className="bg-black/80 pt-20 min-h-screen ">
+    <div className="bg-black/80 pt-20 min-h-screen flex flex-wrap items-center ">
       {carts?.length <= 0 ? (
-        <div className="bg-white text-center p-2">
-          <p>Your cart is empty.</p>
+        <div className="bg-white flex w-full items-center justify-center text-center p-2 h-screen">
+          <p className="text-xl">No items yet!!</p>
         </div>
       ) : (
-        <>
-          {carts.map((item, i) => (
-            <div key={i} className="p-1">
-              <div className="">
-                <input
-                  type="checkbox"
-                  checked={itemCheck.includes(item._id)}
-                  onChange={() => handleChange(item._id)}
-                />
-              </div>
+        <div className="flex flex-wrap gap-2 items-center justify-center w-full  ">
+          {carts?.map((item, i) => (
+            <div key={i}>
+              <input
+                type="checkbox"
+                checked={itemCheck?.includes(item._id)}
+                onChange={() => handleChange(item._id)}
+                className="absolute translate-y-0.5 h-4 w-4  border-none outline-none accent-green-300"
+              />
               <CartCard
                 img={item.image}
                 name={item.title}
@@ -126,30 +178,57 @@ function Carts() {
             </div>
           ))}
 
-          <div className=" mt-2 p-1 flex font-extralight flex-wrap justify-end items-center ">
-            <div className=" items-center p-2 justify-center bg-stone-500 gap-2 flex flex-wrap border border-white rounded-md">
-              <p className="bg-black text-white py-4 px-1"> Subtotal</p>
-              <div className="flex flex-wrap bg-white p-2 items-center border border-black/80 ">
-                <span className=" px-1"> Items</span>
-                <span className=" px-2 ">{totalItems}</span>
+          <div className="w-full mt-2  flex items-center justify-between font-extralight flex-wrap  items-center bg-green-400 rounded-r ">
+            <div className="flex gap-2 flex-wrap">
+              {paymentMethods.map((method) => (
+                <label
+                  key={method.id}
+                  className={`flex items-center justify-between p-2 border ml-2 rounded  cursor-pointer transition
+                      ${
+                        paymentMethod === method.id
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }
+                                 `}
+                >
+                  <div>
+                    <p className="font-medium">{method.label}</p>
+                    <p className="text-sm text-gray-500">{method.desc}</p>
+                  </div>
+
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value={method.id}
+                    checked={paymentMethod === method.id}
+                    onChange={() => setPaymentMethod(method.id)}
+                    className="accent-green-600"
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className=" items-center p-2 justify-center gap-2 rounded-t bg-stone-500 flex flex-wrap border border-white ">
+              <span className="bg-black text-white py-4 px-1"> Subtotal</span>
+              <div className="flex flex-wrap px-4 py-3 gap-2 items-center bg-black/50  border border-stone-500 rounded ">
+                <span> Items</span>
+                <span>{totalItems}</span>
+                <span>=</span>
+                <span className="text-green-300">&#8369;{subTotal} </span>
               </div>
-              <span>=</span>
-              <span className="bg-white p-2  border border-black/80 shadow-md text-green-600">
-                &#8369;{subTotal}{' '}
-              </span>
-              <div className="w-full flex justify-center mt-4">
+              <div className="w-full flex justify-center text-sm text-white font-light mt-4">
                 <button
-                  className="bg-blue-700 text-white px-4  border-b border-b-white rounded-2xl cursor-pointer"
+                  className="bg-blue-700 text-white px-4 py-0.5  border-b border-b-white rounded cursor-pointer"
                   onClick={() => orderHandle()}
                 >
-                  Order
+                  Place Order
                 </button>
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
-      <div>
+      <div className="w-full">
         <ProductList />
       </div>
     </div>

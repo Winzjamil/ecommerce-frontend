@@ -1,14 +1,13 @@
+import { useState } from 'react';
+import { routes } from '../enums';
+import Form from '../components/Form';
+import Input from '../components/Input';
+import { useDispatch } from 'react-redux';
+import { useForm } from '../components/Hooks';
+import { userAuth } from '../features/auth/userSlice';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa6';
 
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-// import useForm from '../components./Hooks';
-import { useForm } from '../components/Hooks';
-import Input from '../components/Input';
-import Form from '../components/Form';
-import { userAuth } from '../features/userSlice';
-import { useDispatch } from 'react-redux';
-import { routes } from '../enums';
 function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
@@ -22,23 +21,20 @@ function SignUp() {
     },
 
     onSubmit: async ({ formData }) => {
-      console.log('formdata', formData);
       try {
         await dispatch(
           userAuth({ type: 'register', credentials: formData })
         ).unwrap();
         alert('Thanks, you are now registered');
-        navigate('/login');
+        navigate(routes.LOGIN);
       } catch (err) {
         console.error('error saving data', err);
       }
     },
   });
-  const ShowHandler = () => {
-    setShowPassword((prev) => !prev);
-  };
+
   return (
-    <div className=" fixed h-screen w-full bg-black flex flex-wrap  justify-center gap-2 pb-20 items-center">
+    <div className=" h-screen w-full bg-blue-700 flex flex-col gap-2  gap-20  items-center">
       <NavLink
         to={routes.HOME}
         className="w-full text-white self-start pl-4 pt-2"
@@ -54,13 +50,11 @@ function SignUp() {
             onChange={changeHandler}
             placeholder="User name"
             autoComplete="given-name"
-            id="user-name"
+            id="Username"
           />
 
           {errors.userName && (
-            <span className="text-red-500 text-sm absolute">
-              {errors.userName}
-            </span>
+            <p className="text-red-400 text-xs absolute">{errors.userName}</p>
           )}
 
           <Input
@@ -74,30 +68,29 @@ function SignUp() {
             autoComplete="email"
           />
           {errors.email && (
-            <span className="text-red-500 text-sm top-1/4 translate-y-7 absolute ">
+            <p className="text-red-400 text-xs top-1/4 translate-y-7 absolute ">
               {errors.email}
-            </span>
+            </p>
           )}
         </div>
-        <div className="flex gap-3  flex-wrap w-full justify-center">
-          <div className=" relative w-full">
-            <Input
-              label="Password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              value={formData.password}
-              onChange={changeHandler}
-              placeholder="Password"
-              autoComplete="password"
-              id="Password"
-            />
-            <span
-              onClick={ShowHandler}
-              className=" absolute right-3 top-1/2  text-white/70"
-            >
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
-            </span>
-          </div>
+        <div className=" relative flex gap-3  flex-wrap w-full justify-center">
+          <Input
+            label="Password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            value={formData.password}
+            onChange={changeHandler}
+            placeholder="Password"
+            autoComplete="password"
+            id="Password"
+          />
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            className=" absolute top-[25%] right-[3%] cursor-pointer text-stone-200"
+          >
+            {showPassword ? <FaEye /> : <FaEyeSlash />}
+          </span>
+
           <Input
             label="Confirm Password"
             name="confirmPassword"
@@ -109,24 +102,25 @@ function SignUp() {
             id="Confirm"
           />
           {errors.confirmPassword && (
-            <span className="text-red-600 absolute">
+            <p className="text-red-400 text-xs absolute">
               {errors.confirmPassword}
-            </span>
+            </p>
           )}
         </div>
-        <div className="w-full flex flex-wrap pl-2 gap-2 mt-4 justify-center items-center">
-          <p className=" text-blue-500 hover:bg-">Already an account?</p>
+        <div className="w-full flex flex-wrap pl-2 gap-2 mt-4 justify-evenly text-sm items-center">
+          <span className=" text-blue-500 hover:bg-">Already an account?</span>
           <NavLink
             to="/login"
-            className="p-0.5 w-30 text-center hover:bg-stone-400  shadow-md cursor-pointer rounded-xl"
+            className="p-0.5  hover:bg-stone-400 px-2 border border-sky-200/60 text-white shadow-md cursor-pointer"
           >
             Login
           </NavLink>
         </div>
-        <div className="w-full flex items-center justify-center">
+
+        <div className="w-full flex items-center text-sm text-white mt-4 justify-center">
           <button
             type="submit"
-            className="  bg-gradient-to-tr from-blue-800 to-stone-600 w-40 cursor-pointer mt-2 p-0.5 rounded-xl shadow-xl"
+            className="  bg-blue-800 px-2  cursor-pointer border-b border-b-white py-0.5 rounded "
           >
             Submit
           </button>

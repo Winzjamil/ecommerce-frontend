@@ -1,30 +1,55 @@
-import { useEffect, useState } from 'react';
 import Form from '../components/Form';
 import Input from '../components/Input';
-import { Select } from 'antd';
-import { useForm } from '../components/Hooks';
+import { useEffect, useState } from 'react';
 import { FaAsterisk } from 'react-icons/fa6';
-import { userAuth } from '../features/userSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { useForm } from '../components/Hooks';
 import { tabHead, USER_ADDRESS } from '../enums';
-export default function AddressForm() {
-  const address = useSelector((state) => state.user.address);
-  const user = useSelector((state) => state.user.user);
-  console.log('ADDRESS', address);
+import {
+  useAddAddressMutation,
+  useGetPsgcQuery,
+} from '../features/shop/shopApi';
 
-  const [isOpen, setIsopen] = useState(false);
+export default function AddressForm({ onClose, isEdit, editedAddress }) {
   const [step, setStep] = useState('region');
+  const [isOpen, setIsopen] = useState(false);
   const [activeCodes, setActiveCodes] = useState({
     region: null,
     province: null,
     city: null,
     barangay: null,
   });
-  const [region, setRegion] = useState([]);
-  const [province, setProvince] = useState([]);
-  const [city, setCity] = useState([]);
-  const [barangay, setBarangay] = useState([]);
-  const dispatch = useDispatch();
+
+  const { data: region = [] } = useGetPsgcQuery({ type: 'regions' });
+  const { data: province = [] } = useGetPsgcQuery(
+    {
+      type: 'provinces',
+      regionCode: activeCodes.region,
+    },
+    {
+      skip: !activeCodes.region, // skip if region not selected
+    }
+  );
+  const { data: city = [] } = useGetPsgcQuery(
+    {
+      type: 'cities',
+      provinceCode: activeCodes.province,
+    },
+    {
+      skip: !activeCodes.province,
+    }
+  );
+
+  const { data: barangay = [] } = useGetPsgcQuery(
+    {
+      type: 'barangays',
+      cityCode: activeCodes.city,
+    },
+    {
+      skip: !activeCodes.city,
+    }
+  );
+  const [addAddress] = useAddAddressMutation();
+
   const { formData, submitHandler, changeHandler, setFormData, errors } =
     useForm({
       initialVal: {
@@ -37,62 +62,23 @@ export default function AddressForm() {
         street: '',
         phone: '',
       },
+
       onSubmit: async ({ formData }) => {
         const updatedData = {
           ...formData,
           phone: Number(formData.phone),
-          postalCode: Number(formData.postalCode),
-          id: user.id,
+          postalCode: formData.postalCode,
         };
-        await dispatch(userAuth({ type: 'address', credentials: updatedData }));
+
+        await addAddress(updatedData).unwrap();
+        onClose();
       },
     });
-
-  async function fetchData(url, setData) {
-    try {
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        setData(data);
-      } else {
-        console.error(res.message);
-      }
-    } catch (err) {
-      console.error('PSGC fetch error:', err);
-      setData([]);
-    }
-  }
-  useEffect(() => {
-    // Determine what to fetch based on step
-    let url = null;
-    let setter = null;
-
-    if (step === USER_ADDRESS.GET_PROVINCE && activeCodes.region) {
-      url = `https://psgc.cloud/api/regions/${activeCodes.region}/provinces`;
-
-      setter = setProvince;
-    } else if (step === USER_ADDRESS.GET_CITY && activeCodes.province) {
-      url = `https://psgc.cloud/api/provinces/${activeCodes.province}/cities-municipalities`;
-      setter = setCity;
-    } else if (step === USER_ADDRESS.GET_BARANGAY && activeCodes.city) {
-      url = `https://psgc.cloud/api/cities-municipalities/${activeCodes.city}/barangays`;
-      setter = setBarangay;
-    }
-
-    if (url && setter) {
-      fetchData(url, setter);
-    }
-  }, [activeCodes, step]);
-
-  useEffect(() => {
-    const url = 'https://psgc.cloud/api/regions';
-    fetchData(url, setRegion);
-  }, []);
 
   const selectAddressHandle = (addObj, key) => {
     setActiveCodes((prev) => ({
       ...prev,
-      [key]: addObj.code,
+      [key]: addObj.psgc_id,
     }));
 
     setFormData((prev) => ({
@@ -103,7 +89,7 @@ export default function AddressForm() {
     key === 'city' &&
       setFormData((prev) => ({
         ...prev,
-        postalCode: addObj.zip_code || 'yruun',
+        postalCode: addObj.zip_code,
       }));
 
     key === USER_ADDRESS.GET_REGION
@@ -118,16 +104,16 @@ export default function AddressForm() {
           setStep('region');
         })();
   };
-  //////////////////////////////////////////////////
+
   const renderList = () => {
     switch (step) {
       case 'region':
         return region.map((r) => (
           <p
-            key={r.code}
+            key={r.name}
             onClick={() => selectAddressHandle(r, USER_ADDRESS.GET_REGION)}
             className={
-              r.code === activeCodes
+              r.psgc_id === activeCodes
                 ? 'border-b  text-xs cursor-pointer  '
                 : '  text-xs cursor-pointer '
             }
@@ -139,10 +125,10 @@ export default function AddressForm() {
       case 'province':
         return province.map((r) => (
           <p
-            key={r.code}
+            key={r.name}
             onClick={() => selectAddressHandle(r, USER_ADDRESS.GET_PROVINCE)}
             className={
-              r.code === activeCodes
+              r.psgc_id === activeCodes
                 ? 'border-b  text-xs cursor-pointer  '
                 : '  text-xs cursor-pointer '
             }
@@ -153,10 +139,10 @@ export default function AddressForm() {
       case 'city':
         return city.map((r) => (
           <p
-            key={r.code}
+            key={r.psgc_id}
             onClick={() => selectAddressHandle(r, USER_ADDRESS.GET_CITY)}
             className={
-              r.code === activeCodes
+              r.psgc_id === activeCodes
                 ? 'border-b  text-xs cursor-pointer  '
                 : '  text-xs cursor-pointer '
             }
@@ -167,10 +153,10 @@ export default function AddressForm() {
       case 'barangay':
         return barangay.map((r) => (
           <p
-            key={r.code}
+            key={r.name}
             onClick={() => selectAddressHandle(r, USER_ADDRESS.GET_BARANGAY)}
             className={
-              r.code === activeCodes
+              r.psgc_id === activeCodes
                 ? 'border-b  text-xs cursor-pointer  '
                 : '  text-xs cursor-pointer  '
             }
@@ -191,84 +177,92 @@ export default function AddressForm() {
     .join(', ');
 
   return (
-    <div className="   min-h-screen flex justify-center   bg-black">
-      <Form onSubmit={submitHandler} header="Complete the form to proceed">
-        <div className="flex gap-2 flex-wrap">
-          <Input
-            label="Name"
-            placeholder="Enter name here..."
-            name="fullName"
-            value={formData.fullName}
-            onChange={changeHandler}
-            autoComplete="fullName"
-          />
-          <Input
-            label="Contact No."
-            placeholder=" Enter phone# here..."
-            type="number"
-            onChange={changeHandler}
-            name="phone"
-            value={formData.phone}
-            autoComplete="tel"
-          />
-          <div className="w-full flex flex-col items-center text-white text-xs mt-2">
-            <label
-              className="block font-extralight absolute top-[47%] text-stone-400 backdrop-blur  leading-none text-xs flex items-center text-white "
-              htmlFor="address"
-            >
-              <span className=" text-xs  mr-0.5 text-red-600">
-                <FaAsterisk />
-              </span>
-              Region Province city Barangay
-            </label>
-            <input
-              type="text"
-              id="address"
-              className="w-full border border-white/20 text-xs placeholder:text-xs outline-none p-2 rounded-t-sm bg-transparent placeholder:text-white/70 placeholder:font-light"
-              onClick={() => setIsopen(!isOpen)}
-              placeholder="Ragion City Province Barangay"
-              readOnly
-              value={fullAddress}
-            />
-            {isOpen && (
-              <div className="max-h-64 absolute w-full max-w-104 top-[52%] overflow-y-auto flex flex-col items-center backdrop-blur  ">
-                <div className="sticky top-0 bg-stone-500 flex justify-between items-center w-full pt-1 px-2 border-b border-b-white ">
-                  {tabHead.map((t, i) => (
-                    <h3 key={i}>{t}</h3>
-                  ))}
-                </div>
-
-                <div className="  text-white flex flex-col w-full p-2 bg-stone-600 border-x-white border-x ">
-                  {renderList()}
-                </div>
-              </div>
-            )}
-          </div>
-          <Input
-            label="Postal Code"
-            placeholder={formData.postalCode}
-            name="street"
-            value={formData.postalCode}
-            readOnly
-            onChange={changeHandler}
-          />
-          <Input
-            label="Street"
-            placeholder="Enter street here..."
-            name="street"
-            value={formData.street}
-            onChange={changeHandler}
-          />
-        </div>
-        <div className="w-full text-center text-white text-xs mt-2">
-          <button
-            type="submit"
-            className=" bg-black   px-4 cursor-pointer  py-1 rounded-xl transform transition duration-600  shadow-[0_4px_6px_0_rgba(255,255,255,0.5)] hover:scale-90 "
+    <Form
+      onSubmit={submitHandler}
+      header="Complete the form to proceed"
+      isAddress
+    >
+      <div className="flex gap-2 flex-wrap">
+        <Input
+          label="Name"
+          placeholder="Enter name here..."
+          name="fullName"
+          value={formData.fullName}
+          onChange={changeHandler}
+          autoComplete="fullName"
+        />
+        <Input
+          label="Contact No."
+          placeholder=" Enter phone# here..."
+          type="number"
+          onChange={changeHandler}
+          name="phone"
+          value={formData.phone}
+          autoComplete="tel"
+        />
+        <div className="w-full flex flex-col  text-xs font-light text-stone-300 gap-1   mt-2">
+          <label
+            htmlFor="address"
+            className="flex items-center gap-1 text-xs leading-none"
           >
-            Submit
-          </button>
+            <FaAsterisk size={8} color="red" />
+            Region Province City Barangay
+          </label>
+          <input
+            type="text"
+            id="address"
+            className="w-full bg-black cursor-pointer placeholder:text-xs outline-none p-1.5 rounded placeholder:text-white/70 placeholder:font-light"
+            onClick={() => setIsopen(!isOpen)}
+            placeholder="Ragion City Province Barangay"
+            readOnly
+            value={fullAddress}
+          />
+          {isOpen && (
+            <div className="max-h-64 absolute w-full max-w-84 top-[53%] overflow-y-auto flex flex-col items-center backdrop-blur  ">
+              <div className="sticky top-0 bg-gray-500 flex justify-between items-center w-full pt-1 px-2 border-b border-b-white ">
+                {tabHead.map((t, i) => (
+                  <h3
+                    key={i}
+                    className={
+                      t === step.charAt(0).toUpperCase() + step.slice(1)
+                        ? 'border-b border-b-sky-200'
+                        : ''
+                    }
+                  >
+                    {t}
+                  </h3>
+                ))}
+              </div>
+
+              <div className="  text-white flex flex-col w-full p-2 bg-stone-400 border-x-white border-x ">
+                {renderList()}
+              </div>
+            </div>
+          )}
         </div>
-      </Form>
-    </div>
+        <Input
+          label="Postal Code"
+          placeholder={formData.postalCode || 'postal code'}
+          name="postalCode"
+          value={formData.postalCode}
+          onChange={changeHandler}
+        />
+        <Input
+          label="Street"
+          placeholder="Enter street here..."
+          name="street"
+          value={formData.street}
+          onChange={changeHandler}
+        />
+      </div>
+      <div className="w-full text-center text-white text-xs mt-2">
+        <button
+          type="submit"
+          className=" bg-black   px-4 cursor-pointer  py-1 rounded-xl transform transition duration-600  shadow-[0_4px_6px_0_rgba(255,255,255,0.5)] hover:scale-90 "
+        >
+          Submit
+        </button>
+      </div>
+    </Form>
   );
 }

@@ -4,16 +4,31 @@ const SELLER_ACCESS = 'seller';
 const ADMIN_ACCESS = 'admin';
 const USER = 'user';
 const tabHead = ['Region', 'Province', 'City', 'Barangay'];
+const usersListTabHead = [
+  'Name',
+  'Address',
+  'Role',
+  'Date',
+  'Status',
+  'Actions',
+];
+const paymentMethods = [
+  { id: 'COD', label: 'Cash on Delivery', desc: 'Pay when item arrives' },
+  { id: 'GCash', label: 'GCash', desc: 'Pay via GCash wallet' },
+  { id: 'Card', label: 'Credit / Debit Card', desc: 'Visa, Mastercard' },
+];
+const header = ['To Pay', 'Shipping', 'Received', 'Return', 'Rate'];
 const routes = {
   CART: '/cart',
   LOGIN: '/login',
   SIGN_UP: '/signup',
   DASH_BOARD: '/dashboard',
+  ADMIN_DASHBOARD: '/adminDashboard',
   ADD_PRODUCT: '/productForm',
   REGISTER: '/register',
   USER_MANAGER: '/userManager',
   HOME: '/',
-  ADDRESS_FORM: '/addressForm',
+  ADDRESS: '/address',
   REVIEW: '/review',
 };
 const USER_ADDRESS = {
@@ -39,11 +54,18 @@ const options = {
     { value: 'clothing', label: 'Clothing' },
   ],
   price_Option: [
-    { value: 'low', label: 'Low ' },
-    { value: 'high', label: ' High' },
+    { value: 'low', label: 'Low' },
+    { value: 'high', label: 'High' },
   ],
 };
-
+const categories = ['clothing', 'electronic', 'toys', 'forniture'];
+const enums = ['Name', 'Description', 'Quantity', 'Price'];
+const PRODUCT_CETEGORIES = {
+  clothing: 'clothing',
+  toys: 'toys',
+  electronic: 'electronic',
+  forniture: 'forniture',
+};
 export {
   ADMIN_ACCESS,
   SELLER_ACCESS,
@@ -53,4 +75,10 @@ export {
   USER_ADDRESS,
   options,
   USER,
+  categories,
+  enums,
+  PRODUCT_CETEGORIES,
+  usersListTabHead,
+  paymentMethods,
+  header,
 };

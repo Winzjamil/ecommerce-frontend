@@ -1,23 +1,18 @@
 import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { FaCartShopping } from 'react-icons/fa6';
-import { handleCart } from '../features/cartSlice';
+import { useAddToCartMutation } from '../features/shop/shopApi';
+import { getAuthData } from '../enums';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '../enums';
 function CartConfirmation({ item, onClose }) {
-  const user = useSelector((state) => state.user.user);
-
-  const [size, setSize] = useState([]);
+  const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [activeIndex, setActiveIndex] = useState('');
+
   const [stock, setStock] = useState(item.quantity - 1);
   const [unitPrice, setUnitPrice] = useState(item.price);
-
-  const dispatch = useDispatch();
-
-  const sizes = item.size.map((s) => s);
-
-  const sizeHandle = (s) => {
-    s ? setSize(s) : setSize(size);
-  };
+  const [addToCart] = useAddToCartMutation();
+  const user = getAuthData('user');
+  const navigate = useNavigate();
 
   const qHandle = (action) => {
     if (action === 'add') {
@@ -41,84 +36,85 @@ function CartConfirmation({ item, onClose }) {
   };
 
   const submitHandle = async () => {
-    // const newImage = [item.image[0]];
     const updatedItem = {
       ...item,
       unitPrice: unitPrice,
       quantity: quantity,
-      size: size,
+      size: selectedSize,
       stock: stock,
-      id: user.id,
+      image: item.images[0],
     };
 
-    if (updatedItem.size.length === 0) {
+    if (!updatedItem.size) {
       alert('Please choose a size');
       return;
     }
 
-    await dispatch(handleCart({ type: 'post', data: updatedItem })).unwrap();
-    onClose();
+    if (!user) {
+      alert('please logging in to add item to cart');
+      navigate(routes.LOGIN);
+      return;
+    }
+
+    try {
+      await addToCart(updatedItem).unwrap();
+      onClose();
+    } catch (err) {
+      console.error(`Failed to add to cart`, err);
+    }
+
     // setTimeout(() => {
     //   setShowMessage(false);
     // }, 5000);
   };
 
   return (
-    <div className="bg-sky-800 p-4 flex flex-wrap gap-1">
-      <div className=" bg-stone-600 p-2 rounded-md flex  flex-wrap border border-stone-400 w-full items-center  mt-1.5 ">
-        <div className="flex flex-wrap">
-          <div className="shadow-b-md flex flex-col  items-center ">
+    <div className="w-full flex justify-center items-center text-xs font-light flex-col gap-2 ">
+      <div className=" bg-stone-600  rounded-md flex gap-2 flex-col w-full max-w-80  items-center justify-center   mt-2  ">
+        <div className="flex flex-col gap-1 items-center text-sm p-1 w-full  ">
+          <img
+            src={item.images[0]}
+            alt={item.title}
+            className="h-25 w-25 object-cover  rounded shadow p-0.5 "
+          />
+          <span className="text-white">{item.title}</span>
+          <span className="text-orange-400 font-extralight">
+            &#8369;{item.price}
+          </span>
+          <p className="w-40 mx-auto text-xs font-extralight text-white break-words">
+            {item.description}
+          </p>
+          <div className=" absolute right-[39%] flex  h-10 w-full items-center max-w-20 top-[35%] gap-2  justify-center rounded-full ">
             <img
-              src={item.image}
-              alt={item.title}
-              className="h-25 w-25 object-cover bg-white  rounded-md shadow-md  hover:border-y hover:border-y-blue-green-400 hover:border-x hover:border-x-red-600"
+              src={item.storeProfile}
+              alt="store name"
+              className="h-7 w-7 object-cover rounded-full bg-sky-200 p-0.5 "
             />
-            <p>{item.title}</p>
-            <p className="text-orange-400 font-extralight">
-              &#8369;{item.price}
-            </p>
-          </div>
-          <div className=" flex   items-center justify-center p-1 gap-3">
-            <div className="flex flex-wrap bg-white p-0.5  font-extralight items-center rounded-sm gap-2">
-              <img
-                src={item.storeProfile}
-                alt="store name"
-                className="h-10 w-10 object-cover  p-1 rounded border-b border-b-gray-300 shadow-md"
-              />
-              <p>{item.storeName}</p>
-            </div>
-            <p className="w-40 mx-auto text-sm text-white break-words">
-              {item.description}
-            </p>
+            <span className="text-xs text-black ">{item.storeName}</span>
           </div>
         </div>
-        {sizes.map((s, i) => {
-          return (
-            <div
-              key={i}
-              onClick={() => {
-                setActiveIndex(i);
-              }}
-              className={
-                activeIndex === i
-                  ? 'border border-sky-200 bg-white  p-0.5 mr-0.5 flex items-center self-end '
-                  : 'bg-transparent border border-white p-0.5 mr-0.5 flex items-center self-end'
-              }
-            >
+
+        <div className="flex gap-2 text-xs bg-black p-1 flex-wrap text-white">
+          {item.size.flatMap((s) =>
+            s.split(',').map((size) => (
               <button
-                onClick={() => {
-                  sizeHandle(s);
-                }}
-                className="bg-stone-400 rounded-md border border-white shadow-md px-1 py-0.5"
+                onClick={() => setSelectedSize(size)}
+                key={size}
+                className={
+                  selectedSize === size
+                    ? 'text-white bg-blue-500 rounded cursor-pointer border border-white shadow-md  p-0.5'
+                    : 'bg-stone-400 rounded cursor-pointer border border-white shadow-md  p-0.5'
+                }
               >
-                {s}
+                {size}
               </button>
-            </div>
-          );
-        })}
-        <div className="flex   bg-sky-200 items-center rounded-sm">
+            ))
+          )}
+        </div>
+
+        <div className="flex flex-wrap w-full bg-slate-500 rounded-b items-center text-white justify-center ">
           <button
-            className="px-5 cursor-pointer  hover:bg-blue-400 rounded-sm"
+            className="px-5 cursor-pointer  py-1 hover:bg-blue-400 rounded-l-sm"
             onClick={(e) => {
               qHandle('sub');
               e.stopPropagation();
@@ -126,12 +122,12 @@ function CartConfirmation({ item, onClose }) {
           >
             -
           </button>
-          <p className="bg-white flex gap-4 items-center px-2">
-            {quantity}
+          <div className="bg-white flex gap-4 py-1 items-center px-2">
+            <span className="text-black">{quantity}</span>
             <span className="text-orange-400 ">&#8369;{unitPrice}</span>
-          </p>
+          </div>
           <button
-            className="px-5 cursor-pointer hover:bg-blue-400 rounded-sm self-end"
+            className="px-5 cursor-pointer py-1 hover:bg-blue-400 rounded-r-sm self-end"
             onClick={(e) => {
               qHandle('add');
               e.stopPropagation();
@@ -142,11 +138,12 @@ function CartConfirmation({ item, onClose }) {
         </div>
       </div>
 
-      <div className="flex justify-center w-full">
+      <div className="flex justify-center w-full text-sm text-gray-700 ">
         <button
-          className="px-7 bg-sky-200  py-1 rounded-md  mr-4  shadow-md cursor-pointer "
+          className="px-5 bg-white  py-1 rounded border-b-2  flex items-center gap-1 shadow-md cursor-pointer "
           onClick={() => submitHandle()}
         >
+          Submit
           <FaCartShopping />
         </button>
       </div>

@@ -6,11 +6,11 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import 'antd/dist/reset.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <Provider store={store}>
-    <StrictMode>
+  <StrictMode>
+    <Provider store={store}>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </StrictMode>
-  </Provider>
+    </Provider>
+  </StrictMode>
 );
