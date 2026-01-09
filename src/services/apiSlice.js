@@ -1,10 +1,10 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 // import { API_URL } from '../enums';
 import { getAuthData } from '../enums';
-const API_URL = import.meta.env.API_URL;
-const baseQuery = fetchBaseQuery({
-  baseUrl: API_URL,
+const apiUrl = import.meta.env.VITE_API_URL;
 
+const baseQuery = fetchBaseQuery({
+  baseUrl: apiUrl,
   prepareHeaders: (headers) => {
     const token = getAuthData('token');
 

@@ -41,6 +41,7 @@ function LoginForm() {
         }
       } catch (err) {
         const message = err?.message || err || 'Login failed';
+        console.log(message);
         setError(message);
 
         setTimeout(() => {
