@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { API_URL, setUser } from '../../enums';
+import { setUser } from '../../enums';
+const API_URL = import.meta.env.API_URL;
 
 export const userAuth = createAsyncThunk(
   'user/userAuth',
