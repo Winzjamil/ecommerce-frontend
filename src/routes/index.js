@@ -14,7 +14,12 @@ export const loadPage = (name) => {
 };
 
 export const routesList = [
-  { path: routes.HOME, component: 'ProductList', layout: 'MainLayout' },
+  {
+    path: routes.HOME,
+    component: 'ProductList',
+    layout: 'MainLayout',
+    roles: [USER],
+  },
   {
     path: routes.ADDRESS,
     component: 'Dashboard/user_info/Address',
@@ -49,7 +54,14 @@ export const routesList = [
     layout: 'MainLayout',
     protected: true,
     roles: [ADMIN_ACCESS],
-    children: [{ index: true, component: 'Dashboard/admin/UserList' }],
+    children: [
+      { index: true, component: 'Dashboard/admin/UserList' },
+      { path: 'product', component: 'Dashboard/admin/ProductList' },
+      {
+        path: 'orders',
+        component: 'Dashboard/user_info/Orders',
+      },
+    ],
   },
 
   {

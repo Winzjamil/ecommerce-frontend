@@ -7,15 +7,15 @@ import {
   FaEnvelope,
 } from 'react-icons/fa6';
 import { userAuth } from '../features/auth/userSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { IoMdLogIn } from 'react-icons/io';
 import { useForm } from '../components/Hooks';
 import Input from '../components/Input';
 import Form from '../components/Form';
-import { routes } from '../enums';
-import { SELLER_ACCESS, ADMIN_ACCESS } from '../enums';
+import { SELLER_ACCESS, ADMIN_ACCESS, routes } from '../enums';
+
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -40,10 +40,8 @@ function LoginForm() {
           navigate(routes.HOME);
         }
       } catch (err) {
-        const message = err?.message || err || 'Login failed';
-        console.log(message);
+        const message = err?.message || err;
         setError(message);
-
         setTimeout(() => {
           setError(null);
         }, 5000);
@@ -82,7 +80,7 @@ function LoginForm() {
               {errors.email}
             </span>
           )}
-          {/* {errors.email && <span className="text-red-500">{errors.email}</span>} */}
+
           <div className="relative w-full">
             <div>
               <Input

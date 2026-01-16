@@ -6,18 +6,27 @@ export const userAuth = createAsyncThunk(
   'user/userAuth',
   async ({ credentials, type }, { rejectWithValue }) => {
     const url = `${API_URL}/${type}`;
+    console.log(credentials, url);
+    let res;
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-    });
+    if (type === 'login') {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+    } else {
+      res = await fetch(url, {
+        method: 'POST',
+        body: credentials,
+      });
+    }
     const result = await res.json();
 
     if (!res.ok) {
-      return rejectWithValue(result.message || 'Request failed');
+      return rejectWithValue(result.message);
     }
-
+    // saving data
     if (type === 'login') {
       result.user ? setUser('user', result.user) : null;
       result.token ? setUser('token', result.token) : null;

@@ -97,12 +97,32 @@ function WithoutUserHeader({ searchHandler, searchValue }) {
         <div className="flex text-white items-center gap-2">
           <Img img={img1} />
           <button
-            onClick={() => setIsOpen(true)}
+            onClick={() => setIsOpen(!isOpen)}
             className="text-white text-2xl"
           >
             ☰
           </button>
         </div>
+        {isOpen && (
+          <div className="absolute top-[95%] w-full max-w-[30%] text-sm bg-black/40 backdrop-blur rounded shadow-md  p-2 text-white font-light  flex flex-col   ">
+            <NavLink
+              to={routes.HOME}
+              className="hover:border-b hover:border-b-white "
+            >
+              Home
+            </NavLink>
+            <NavLink className="hover:border-b hover:border-b-white ">
+              Location
+            </NavLink>
+
+            <NavLink className="hover:border-b hover:border-b-white ">
+              Services
+            </NavLink>
+            <NavLink className="hover:border-b hover:border-b-white ">
+              Contact Us
+            </NavLink>
+          </div>
+        )}
         <div className="flex items-center flex-wrap gap-2">
           <NavLink to={routes.CART} className=" font-light text-stone-300 ">
             <FaCartShopping />

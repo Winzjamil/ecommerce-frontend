@@ -37,12 +37,16 @@ function CartConfirmation({ item, onClose }) {
 
   const submitHandle = async () => {
     const updatedItem = {
-      ...item,
       unitPrice: unitPrice,
       quantity: quantity,
       size: selectedSize,
       stock: stock,
       image: item.images[0],
+      category: item.category,
+      discreption: item.discreption,
+      price: item.price,
+      productId: item._id,
+      title: item.title,
     };
 
     if (!updatedItem.size) {

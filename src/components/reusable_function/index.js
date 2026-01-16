@@ -6,7 +6,7 @@ export const cartHandler = ({
   setSingleItem,
   setOpen,
 }) => {
-  const isInCart = carts.some((c) => c._id === pId);
+  const isInCart = carts.some((c) => c.productId === pId);
   const product = products.find((p) => p._id === pId);
 
   if (isInCart) {

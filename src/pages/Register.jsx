@@ -24,7 +24,7 @@ function Register() {
   } = useForm({
     initialVal: {
       storeName: '',
-      profile: null,
+      profile: [],
       account: '',
       password: '',
       role: SELLER_ACCESS,
@@ -34,20 +34,28 @@ function Register() {
     },
 
     onSubmit: async ({ formData }) => {
-      const updatedFormData = {
-        ...formData,
-        profile: preview.profile[0],
-      };
+      const formPayload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key !== 'profile') {
+          formPayload.append(key, value);
+        }
+      });
+      formData.profile?.forEach((file) => {
+        formPayload.append('profile', file);
+      });
+
+      for (let [key, value] of formPayload.entries()) {
+        console.log('key', key, '>>>>>>>> value', value);
+      }
 
       try {
         await dispatch(
-          userAuth({ type: 'register', credentials: updatedFormData })
+          userAuth({ type: 'register', credentials: formPayload })
         ).unwrap();
-
         alert('Thanks, you are now registered');
         navigate(routes.LOGIN);
-        ref.current.value = '';
-        setPreview(!preview);
+        ref.current.value = null;
+        setPreview([]);
       } catch (err) {
         console.error('error saving data', err);
       }
@@ -63,7 +71,7 @@ function Register() {
         <FaArrowLeft />
       </NavLink>
       <Form onSubmit={submitHandler}>
-        <div className="w-full flex gap-8 mb-4">
+        <div className=" relative w-full flex gap-8 mb-4">
           <Input
             label="StoreName"
             name="storeName"
@@ -74,7 +82,7 @@ function Register() {
             id="storeName"
           />
           {errors.storeName && (
-            <span className="text-red-500 top-[25%]  font-light text-xs absolute">
+            <span className="text-red-500 top-[98%]  font-light text-xs absolute">
               {errors.storeName}
             </span>
           )}
@@ -88,12 +96,12 @@ function Register() {
             id="user-name"
           />
           {errors.userName && (
-            <span className="text-red-500 right-[35%] top-[25%] font-light text-xs absolute">
+            <span className="text-red-500 right-[10%] top-[98%] font-light text-xs absolute">
               {errors.userName}
             </span>
           )}
         </div>
-        <div className="w-full flex gap-8 mb-4">
+        <div className=" relative w-full flex gap-8 mb-4 text-xs">
           <Input
             label="Account No."
             name="account"
@@ -104,9 +112,9 @@ function Register() {
             type="number"
             id="account"
           />
-          {errors.userName && (
-            <span className="text-red-500 right-[35%] top-[25%] font-light text-xs absolute">
-              {errors.userName}
+          {errors.account && (
+            <span className="text-red-500 right-[16%] top-[98%] font-light text-xs absolute">
+              {errors.account}
             </span>
           )}
           <Input
@@ -119,9 +127,14 @@ function Register() {
             placeholder="Email"
             autoComplete="email"
           />
+          {errors.email && (
+            <span className="text-red-500 right-[16%] top-[98%] font-light text-xs absolute">
+              {errors.email}
+            </span>
+          )}
         </div>
 
-        <div className="w-full flex gap-8 mt-4">
+        <div className=" relative w-full flex gap-8 mt-4 text-xs">
           <div className="relative w-full">
             <Input
               label="Password"
@@ -150,9 +163,11 @@ function Register() {
             autoComplete="current-password"
             id="Confirm"
           />
-          {/* {errors.confirmPassword && (
-            <span className="text-red-600">{errors.confirmPassword}</span>
-          )} */}
+          {errors.confirmPassword && (
+            <span className=" absolute top-[98%] left-[30%] text-red-600">
+              {errors.confirmPassword}
+            </span>
+          )}
         </div>
         <div className=" flex flex-col mt-5 gap-1 w-full items-center text-xs text-gray-200  justify-center ">
           <label
@@ -165,7 +180,6 @@ function Register() {
             type="file"
             name="profile"
             id="File"
-            required
             onChange={changeHandler}
             accept="image/*"
             ref={ref}

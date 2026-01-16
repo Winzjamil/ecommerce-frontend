@@ -6,11 +6,6 @@ import { useGetOrderQuery } from '../../../features/shop/shopApi';
 function Orders() {
   const [clickStatus, setClickStatus] = useState(null);
   const { data: orders = [] } = useGetOrderQuery();
-
-  console.log('orders', orders);
-  // const orderItem = [...orders].flatMap((item) => item.items);
-  // console.log('orderItem', orderItem);
-
   const showOrders = (status) => {
     setClickStatus(status);
   };

@@ -30,7 +30,7 @@ function Header() {
   };
 
   return (
-    <div className="fixed w-full z-10  bg-indigo-500 px-3 py-4 border-b text-sm border-stone-500">
+    <div className="fixed w-full z-10  bg-indigo-500 px-3 py-4  text-sm border-stone-500">
       {user ? (
         <WithUserHeader
           user={user}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { routes } from '../enums';
 import Form from '../components/Form';
 import Input from '../components/Input';
@@ -12,20 +12,46 @@ function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { formData, changeHandler, submitHandler, errors } = useForm({
+  const profileRef = useRef(null);
+  const {
+    formData,
+    changeHandler,
+    submitHandler,
+    errors,
+    preview,
+    setPreview,
+  } = useForm({
     initialVal: {
       userName: '',
       email: '',
       password: '',
       confirmPassword: '',
+      profile: [],
     },
 
     onSubmit: async ({ formData }) => {
+      console.log();
+      const formPayload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key !== 'profile') {
+          formPayload.append(key, value);
+        }
+      });
+
+      formData.profile?.forEach((file) => {
+        formPayload.append('profile', file);
+      });
+      for (let [key, value] of formPayload.entries()) {
+        console.log('key', key, '>>>>>>>> value', value);
+      }
+
       try {
         await dispatch(
-          userAuth({ type: 'register', credentials: formData })
+          userAuth({ type: 'register', credentials: formPayload })
         ).unwrap();
         alert('Thanks, you are now registered');
+        profileRef.current.value = null;
+        setPreview([]);
         navigate(routes.LOGIN);
       } catch (err) {
         console.error('error saving data', err);
@@ -42,7 +68,7 @@ function SignUp() {
         <FaArrowLeft />
       </NavLink>
       <Form onSubmit={submitHandler}>
-        <div className="flex gap-3 flex-wrap w-full justify-center mb-2 ">
+        <div className=" relative flex gap-3 flex-wrap w-full justify-center mb-2 ">
           <Input
             label="User Name"
             name="userName"
@@ -54,7 +80,9 @@ function SignUp() {
           />
 
           {errors.userName && (
-            <p className="text-red-400 text-xs absolute">{errors.userName}</p>
+            <p className="text-red-600 text-xs absolute top-[42%]">
+              {errors.userName}
+            </p>
           )}
 
           <Input
@@ -68,7 +96,7 @@ function SignUp() {
             autoComplete="email"
           />
           {errors.email && (
-            <p className="text-red-400 text-xs top-1/4 translate-y-7 absolute ">
+            <p className="text-red-600 text-xs  absolute top-[98%] ">
               {errors.email}
             </p>
           )}
@@ -102,10 +130,39 @@ function SignUp() {
             id="Confirm"
           />
           {errors.confirmPassword && (
-            <p className="text-red-400 text-xs absolute">
+            <p className="text-red-600 text-xs absolute top-[98%]">
               {errors.confirmPassword}
             </p>
           )}
+        </div>
+        <div className=" flex flex-col mt-5 gap-1 w-full items-center text-xs text-gray-200  justify-center ">
+          <label
+            htmlFor="File"
+            className=" bg-black/60 cursor-pointer p-1 rounded  text-center text-stone-300 "
+          >
+            Choose Profile
+          </label>
+          <input
+            type="file"
+            name="profile"
+            id="File"
+            onChange={changeHandler}
+            accept="image/*"
+            ref={profileRef}
+            className="p-2 hidden rounded-md cursor-pointer   "
+          />
+
+          <div className="  flex justify-center items-center  p-1  w-full ">
+            {preview.profile ? (
+              <div className="h-auto shadow-md border  border-blue-200 rounded-sm p-1 bg-stone-500">
+                <img
+                  src={preview.profile[0]}
+                  alt="preview"
+                  className="rounded-md w-25 h-25 bg-sky-200 b p-0.5 "
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
         <div className="w-full flex flex-wrap pl-2 gap-2 mt-4 justify-evenly text-sm items-center">
           <span className=" text-blue-500 hover:bg-">Already an account?</span>

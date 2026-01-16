@@ -141,6 +141,20 @@ export const shopApi = apiSlice.injectEndpoints({
       transformResponse: (response) => response.data || [],
       providesTags: ['PSGC'],
     }),
+
+    ////////////////////ADMIN ACCESS/////////////////
+    adminRemoveProduct: builder.mutation({
+      query: (id) => ({
+        url: `/products/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Products'],
+    }),
+    getActivity: builder.query({
+      query: () => '/userActivity',
+      transformResponse: (response) => response.data || [],
+      providesTags: ['Activity'],
+    }),
   }),
 });
 export const {
@@ -166,6 +180,9 @@ export const {
   //////////<<<<<<ORDER>>>>/////////
   useGetOrderQuery,
   useAddOrderMutation,
+
   ///////////////////////////////////
   useGetPsgcQuery,
+  useAdminRemoveProductMutation,
+  useGetActivityQuery,
 } = shopApi;

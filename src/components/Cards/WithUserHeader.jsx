@@ -8,7 +8,6 @@ import { SELLER_ACCESS, ADMIN_ACCESS, routes } from '../../enums';
 
 import {
   FaHouse,
-  FaServicestack,
   FaAngleDown,
   FaAngleUp,
   FaCartShopping,
@@ -25,8 +24,8 @@ function WithUserHeader({
 
   return (
     <>
+      {/* mobile */}
       <div className="flex items-center justify-between text-white gap-2 md:hidden">
-        {/* mobile */}
         <div className="flex items-center gap-2">
           <Img img={img1} />
           <button onClick={() => setIsOpen(!isOpen)}>☰</button>
@@ -60,7 +59,6 @@ function WithUserHeader({
       </div>
 
       {/* MOBILE DROPDOWN MENU */}
-
       {isOpen && (
         <div className="md:hidden w-full text-xs mt-3 flex flex-wrap gap-3 text-white">
           {user.role === SELLER_ACCESS ? (
@@ -158,7 +156,7 @@ function WithUserHeader({
         </div>
 
         {/* SEARCH BAR */}
-        {user.role === SELLER_ACCESS ? null : (
+        {user.role === SELLER_ACCESS || user.role === ADMIN_ACCESS ? null : (
           <div className="relative w-full max-w-sm text-white">
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 " />
             <input
@@ -173,7 +171,7 @@ function WithUserHeader({
 
         {/* RIGHT MENU */}
         <div className="flex items-center gap-6 ">
-          {user.role === SELLER_ACCESS ? null : (
+          {user.role === SELLER_ACCESS || user.role === ADMIN_ACCESS ? null : (
             <NavLink
               to={routes.CART}
               className={({ isActive }) =>
@@ -192,24 +190,39 @@ function WithUserHeader({
               )}
             </NavLink>
           )}
-
+          {/* to dashboard for admin seller user  */}
           <div
             onMouseEnter={() => setIsModalOpen(true)}
             onMouseLeave={() => setTimeout(() => setIsModalOpen(false), 5000)}
             className="relative inline-block "
           >
-            <div className="flex justify-center items-center  gap-1 flex-col">
-              <NavLink
-                to={routes.DASH_BOARD}
-                className="p-0.5 bg-white/70 rounded-3xl "
-              >
-                {user.profile ? (
-                  <Img img={user.profile} />
-                ) : (
-                  <RxAvatar className="text-lg" />
-                )}
-              </NavLink>
-            </div>
+            {user.role === ADMIN_ACCESS ? (
+              <div className="flex justify-center items-center  gap-1 flex-col">
+                <NavLink
+                  to={routes.ADMIN_DASHBOARD}
+                  className="p-0.5 bg-white/70 rounded-3xl "
+                >
+                  {user.profile ? (
+                    <Img img={user.profile} />
+                  ) : (
+                    <RxAvatar className="text-lg" />
+                  )}
+                </NavLink>
+              </div>
+            ) : (
+              <div className="flex justify-center items-center  gap-1 flex-col">
+                <NavLink
+                  to={routes.DASH_BOARD}
+                  className="p-0.5 bg-white/70 rounded-3xl "
+                >
+                  {user.profile ? (
+                    <Img img={user.profile} />
+                  ) : (
+                    <RxAvatar className="text-lg" />
+                  )}
+                </NavLink>
+              </div>
+            )}
 
             {isModalOpen && (
               <div className="absolute right-0 mt-2 bg-black/40 backdrop-blur p-3 rounded text-white flex flex-col gap-2">

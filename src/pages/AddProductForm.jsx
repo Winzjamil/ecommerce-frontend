@@ -10,6 +10,7 @@ import {
   useGetUserProductsQuery,
   useRemoveProductMutation,
   useUpdateProductItemMutation,
+  useGetOrderQuery,
 } from '../features/shop/shopApi';
 import Form from '../components/Form';
 import Input from '../components/Input';
@@ -45,12 +46,14 @@ function AddProductForm() {
   const [addProduct] = useAddProductMutation();
   const [update] = useUpdateProductItemMutation();
   const [removeProduct] = useRemoveProductMutation();
-
+  const { data: order = [] } = useGetOrderQuery();
+  console.log('seller order', order);
   const {
     formData,
     submitHandler,
     changeHandler,
     errors,
+    setErrors,
     setFormData,
     preview,
     setPreview,
@@ -89,15 +92,12 @@ function AddProductForm() {
         setIsOpen(false);
         return;
       }
-
       addProduct(formPayload);
+
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
       setPreview([]);
-      // for (let [key, value] of formPayload.entries()) {
-      //   console.log('key', key, '>>>>>>>> value', value);
-      // }
     },
   });
 
@@ -107,8 +107,7 @@ function AddProductForm() {
     );
     if (!confirmDelete) return;
     try {
-      const response = await removeProduct(itemId).unwrap();
-      console.log('Product removed successfully', response.data);
+      await removeProduct(itemId).unwrap();
     } catch (err) {
       console.error('Failed to remove product', err);
     }
@@ -126,18 +125,16 @@ function AddProductForm() {
     }
     setIsOpen(true);
     setFormData(item);
+    setPreview([]);
     setEdit(id);
   };
 
   const closeModal = () => {
     setFormData({});
     setEdit(null);
+    setErrors({});
     setIsOpen(false);
   };
-  // const closeEditedModal = () => {
-  //   setIsEditedForm(false);
-  //   setFormData({});
-  // };
 
   const renderData = (cat) => {
     switch (cat) {
@@ -191,17 +188,17 @@ function AddProductForm() {
     }
   };
   return (
-    <div className="flex  min-h-screen flex-col gap-2   text-xs font-extralight mx-auto     bg-indigo-400  ">
+    <div className="flex  min-h-screen flex-col gap-2   text-xs font-extralight mx-auto    bg-slate-700  ">
       <div className=" pl-2 text-white pt-10">
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-black px-2 p-1 rounded cursor-pointer shadow"
+          className="bg-black px-2 p-1 rounded cursor-pointer  hover:bg-green-200 transition shadow"
         >
           Add Product
         </button>
       </div>
       {isOpen && (
-        <div className="absolute flex flex-col pr-3 gap-3 bg-black/70 h-screen justify-center  text-white items-end  w-full ">
+        <div className="absolute flex flex-col pr-3 gap-3 bg-black/70 h-screen justify-center  text-white items-center  w-full ">
           {edit ? (
             <button
               className="bg-black/60 p-1 px-2 rounded relative right-[30%] hover:bg-red-500 cursor-pointer"
@@ -211,7 +208,7 @@ function AddProductForm() {
             </button>
           ) : (
             <button
-              className="bg-black/60 p-1 px-2 rounded relative right-[30%] hover:bg-red-500 cursor-pointer"
+              className="bg-black/60 p-1 px-2 rounded relative right-[13%] hover:bg-red-500 cursor-pointer"
               onClick={() => closeModal()}
             >
               X
@@ -222,7 +219,7 @@ function AddProductForm() {
             header="Please complete me to proceed"
             isProdForm
           >
-            <div className="w-full flex gap-4 items-center">
+            <div className=" relative w-full flex gap-4 items-center text-xs">
               <Input
                 name="title"
                 id="Title"
@@ -232,7 +229,9 @@ function AddProductForm() {
                 onChange={changeHandler}
               />
               {errors.title && (
-                <span className="text-red-600">{errors.title}</span>
+                <span className=" absolute top-[98%] text-red-600">
+                  {errors.title}
+                </span>
               )}
               <Input
                 type="number"
@@ -244,10 +243,12 @@ function AddProductForm() {
                 onChange={changeHandler}
               />
               {errors.quantity && (
-                <span className="text-red-600">{errors.quantity}</span>
+                <span className=" absolute top-[98%] right-[20%] text-red-600">
+                  {errors.quantity}
+                </span>
               )}
             </div>
-            <div className="w-full flex gap-4 items-center">
+            <div className=" relative w-full flex gap-4 items-center ">
               <Input
                 type="number"
                 id="price"
@@ -257,8 +258,10 @@ function AddProductForm() {
                 placeholder="Enter price Here.."
                 onChange={changeHandler}
               />
-              {errors.quantity && (
-                <span className="text-red-600">{errors.price}</span>
+              {errors.price && (
+                <span className=" absolute top-[98%] text-red-600 text-xs">
+                  {errors.price}
+                </span>
               )}
               <Input
                 name="size"
@@ -268,11 +271,13 @@ function AddProductForm() {
                 label="Size"
                 onChange={changeHandler}
               />
-              {/* {errors.quantity && (
-              <span className="text-red-600">*{errors.quantity}</span>
-              )} */}
+              {errors.size && (
+                <span className=" absolute top-[98%] right-[25%] text-red-600">
+                  {errors.size}
+                </span>
+              )}
             </div>
-            <div className="w-full flex flex-col items-center gap-1  text-stone-300  ">
+            <div className=" relative w-full flex flex-col items-center gap-1  text-stone-300  ">
               <label
                 className=" pl-7 self-start flex gap-0.5  leading-none items-center   "
                 htmlFor="Category"
@@ -297,10 +302,13 @@ function AddProductForm() {
                   );
                 })}
               </select>
+              {errors.category && (
+                <span className=" absolute top-[98%] text-red-600">
+                  {errors.category}
+                </span>
+              )}
             </div>
-            {/* {errors.quantity && (
-              <span className="text-red-600">*{errors.quantity}</span>
-               )} */}
+
             <div className="w-full flex flex-col items-center gap-1 text-stone-300 text-xs">
               <label
                 htmlFor="Description"
@@ -317,8 +325,6 @@ function AddProductForm() {
                 onChange={changeHandler}
                 className="max-w-80 w-full bg-black text-base h-15 p-1 text-white/70 rounded resize-y outline-none text-center focus:border   focus:border-sky-200"
               ></textarea>
-            </div>
-            <div>
               {errors.quantity && (
                 <span className="text-red-600">*{errors.quantity}</span>
               )}
@@ -343,7 +349,7 @@ function AddProductForm() {
                     accept="image/*"
                     multiple
                     ref={fileInputRef}
-                    className=" hidden  "
+                    className="hidden"
                   />
                 </div>
               )}
@@ -384,7 +390,7 @@ function AddProductForm() {
                 className={
                   cat === clickCat
                     ? 'border-b border-b-red-500 text-white  cursor-pointer'
-                    : 'cursor-pointer bg-slate-300  px-2 py-0.5 rounded'
+                    : 'cursor-pointer bg-slate-300 hover:bg-slate-200  px-2 py-0.5 rounded'
                 }
               >
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}

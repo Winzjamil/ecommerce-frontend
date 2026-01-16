@@ -8,14 +8,19 @@ const usersListTabHead = [
   'Name',
   'Address',
   'Role',
-  'Date',
   'Status',
+  'Last Seen',
   'Actions',
 ];
 const paymentMethods = [
   { id: 'COD', label: 'Cash on Delivery', desc: 'Pay when item arrives' },
   { id: 'GCash', label: 'GCash', desc: 'Pay via GCash wallet' },
   { id: 'Card', label: 'Credit / Debit Card', desc: 'Visa, Mastercard' },
+];
+const roleOptions = [
+  { label: 'user', value: 'user' },
+  { label: 'seller', value: 'seller' },
+  { label: 'admin', value: 'admin' },
 ];
 const header = ['To Pay', 'Shipping', 'Received', 'Return', 'Rate'];
 const routes = {
@@ -81,4 +86,5 @@ export {
   usersListTabHead,
   paymentMethods,
   header,
+  roleOptions,
 };

@@ -22,15 +22,13 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
 
     const rules = {
       userName: {
-        required: 'user name is required',
+        required: 'User name is required',
         // pattern: [regex, 'Invalid fullName'],
       },
       storeName: {
         required: 'Store name is required',
       },
-      image: {
-        required: 'image is required',
-      },
+
       size: {
         required: 'Size is required',
         pattern: [regex, 'Invalid size'],
@@ -46,19 +44,20 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
         required: 'Email is required',
       },
       quantity: {
-        required: 'quntity is required',
+        required: 'Quantity is required',
       },
       category: {
-        required: 'cetogery is required',
+        required: 'Cetogery is required',
       },
       size: {
-        required: 'size is required',
+        required: 'Size is required',
       },
       description: {
-        required: 'description is required',
+        required: 'Description is required',
       },
+      price: { required: 'price is required' },
       title: {
-        required: 'name  is required',
+        required: 'Name  is required',
       },
     };
 
@@ -123,7 +122,7 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
 
       setFormData((prev) => ({
         ...prev,
-        [name]: selectedFiles,
+        [name]: selectedFiles ? selectedFiles : null,
       }));
 
       setPreview((prev) => ({
@@ -149,6 +148,7 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
     submitHandler,
     changeHandler,
     errors,
+    setErrors,
     setFormData,
     preview,
     setPreview,

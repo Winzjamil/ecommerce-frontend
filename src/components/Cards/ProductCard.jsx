@@ -9,7 +9,7 @@ function Card({ image, title, price, description, cartHandler, stock, id }) {
           <img
             src={image}
             alt={title || 'product-image'}
-            className="  w-40  h-25 object-fit rounded"
+            className="w-40  h-25 object-fit rounded"
           />
         </NavLink>
       </div>
