@@ -21,6 +21,7 @@ function WithUserHeader({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   return (
     <>
@@ -32,23 +33,48 @@ function WithUserHeader({
         </div>
 
         <div className="flex justify-center items-center text-xs gap-4   ">
-          <NavLink
-            to={routes.CART}
-            className={({ isActive }) =>
-              `relative text-2xl ${isActive ? 'border-b' : ''}`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <FaCartShopping className="text-white text-xs" />
-                {!isActive && cart.length > 0 && (
-                  <span className="absolute top-[3%] translate-x-2 text-xs bg-sky-500 text-white w-4 h-4 flex items-center justify-center rounded-full">
-                    {cart.length}
-                  </span>
-                )}
-              </>
-            )}
-          </NavLink>
+          <button onClick={() => setIsNavOpen(!isNavOpen)}>dashboard</button>
+          {isNavOpen && (
+            <div className=" absolute top-[65%] left-[65%] rounded backdrop-blur flex flex-col text-center bg-black/40">
+              <NavLink
+                to="/adminDashboard"
+                className="p-1 rounded hover:bg-black/40 transition"
+              >
+                Users
+              </NavLink>
+              <NavLink to="orders" className="p-1 rounded hover:bg-black/40 ">
+                Orders
+              </NavLink>
+              <NavLink className="p-1 rounded hover:bg-black/40 ">
+                Activity
+              </NavLink>
+              <NavLink to="product" className="p-1 rounded hover:bg-black/40 ">
+                Products
+              </NavLink>
+              <NavLink className="p-1 rounded hover:bg-black/40 ">
+                User Manager
+              </NavLink>
+            </div>
+          )}
+          {user.role === SELLER_ACCESS || user.role === ADMIN_ACCESS ? null : (
+            <NavLink
+              to={routes.CART}
+              className={({ isActive }) =>
+                `relative text-2xl ${isActive ? 'border-b' : ''}`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <FaCartShopping className="text-white" />
+                  {!isActive && cart.length > 0 && (
+                    <span className="absolute top-[3%] translate-x-2 text-xs bg-sky-500 text-white w-4 h-4 flex items-center justify-center rounded-full">
+                      {cart.length}
+                    </span>
+                  )}
+                </>
+              )}
+            </NavLink>
+          )}
           <NavLink
             to={routes.DASH_BOARD}
             className="p-0.5 bg-white/70 rounded-full "

@@ -23,11 +23,11 @@ function Sidebar() {
           </button>
         </div>
       </div>
-      <nav className="w-full max-w-40 mt-20 text-center flex text-sm  flex-col gap-1">
+      <nav className=" w-full max-w-40 mt-20 text-center flex text-sm  flex-col gap-1">
         {loginUser && loginUser.role === ADMIN_ACCESS ? (
           <NavBar />
         ) : (
-          <>
+          <div className="hidden md:flex flex-col gap-2 ">
             <NavLink
               to="/dashboard"
               className="  p-1  rounded hover:bg-black/40 transition  "
@@ -52,7 +52,7 @@ function Sidebar() {
             <NavLink className=" p-1 rounded hover:bg-black/40 transition ">
               Settings
             </NavLink>
-          </>
+          </div>
         )}
       </nav>
     </aside>
