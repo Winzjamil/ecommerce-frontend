@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { FaCartShopping } from 'react-icons/fa6';
 import { useAddToCartMutation } from '../features/shop/shopApi';
-import { getAuthData } from '../enums';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../enums';
+import { useSelector } from 'react-redux';
 function CartConfirmation({ item, onClose }) {
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
-
   const [stock, setStock] = useState(item.quantity - 1);
   const [unitPrice, setUnitPrice] = useState(item.price);
   const [addToCart] = useAddToCartMutation();
-  const user = getAuthData('user');
+  const { user, isAthenticated } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const qHandle = (action) => {
@@ -112,7 +111,7 @@ function CartConfirmation({ item, onClose }) {
               >
                 {size}
               </button>
-            ))
+            )),
           )}
         </div>
 

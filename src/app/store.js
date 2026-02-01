@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import userReducer from '../features/auth/userSlice.js';
+import userReducer from '../features/auth/userAuth.js';
 import productReducer from '../features/productSlice.js';
 import { apiSlice } from '../services/apiSlice.js';
 import { setupListeners } from '@reduxjs/toolkit/query';

@@ -2,16 +2,17 @@ import { useState } from 'react';
 import ProfileForm from './ProfileForm';
 import { RxAvatar } from 'react-icons/rx';
 import { getAuthData } from '../../../enums';
+import { useSelector } from 'react-redux';
 
 function Profile() {
-  const user = getAuthData('user');
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className=" bg-gray-300 w-full pt-5 h-screen">
       <div className="bg-gray-200 w-full flex flex-col gap-20 items-center text-white text-xs">
         <div className="bg-gray-400 w-full flex items-center  justify-center">
-          {user ? (
+          {user && isAuthenticated ? (
             <img
               src={user.coverPhoto}
               alt=""

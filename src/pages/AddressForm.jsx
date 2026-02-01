@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { FaAsterisk } from 'react-icons/fa6';
 import { useForm } from '../components/Hooks';
 import { tabHead, USER_ADDRESS } from '../enums';
+import { useSelector } from 'react-redux';
 import {
   useAddAddressMutation,
   useGetPsgcQuery,
@@ -27,7 +28,7 @@ export default function AddressForm({ onClose, isEdit, editedAddress }) {
     },
     {
       skip: !activeCodes.region, // skip if region not selected
-    }
+    },
   );
   const { data: city = [] } = useGetPsgcQuery(
     {
@@ -36,7 +37,7 @@ export default function AddressForm({ onClose, isEdit, editedAddress }) {
     },
     {
       skip: !activeCodes.province,
-    }
+    },
   );
 
   const { data: barangay = [] } = useGetPsgcQuery(
@@ -46,7 +47,7 @@ export default function AddressForm({ onClose, isEdit, editedAddress }) {
     },
     {
       skip: !activeCodes.city,
-    }
+    },
   );
   const [addAddress] = useAddAddressMutation();
 
@@ -95,14 +96,14 @@ export default function AddressForm({ onClose, isEdit, editedAddress }) {
     key === USER_ADDRESS.GET_REGION
       ? setStep(USER_ADDRESS.GET_PROVINCE)
       : key === USER_ADDRESS.GET_PROVINCE
-      ? setStep(USER_ADDRESS.GET_CITY)
-      : key === USER_ADDRESS.GET_CITY
-      ? setStep(USER_ADDRESS.GET_BARANGAY)
-      : //to close the drop down, and reset the data rendered to region when user open dropdown again
-        (() => {
-          setIsopen(false);
-          setStep('region');
-        })();
+        ? setStep(USER_ADDRESS.GET_CITY)
+        : key === USER_ADDRESS.GET_CITY
+          ? setStep(USER_ADDRESS.GET_BARANGAY)
+          : //to close the drop down, and reset the data rendered to region when user open dropdown again
+            (() => {
+              setIsopen(false);
+              setStep('region');
+            })();
   };
 
   const renderList = () => {

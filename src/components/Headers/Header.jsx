@@ -3,8 +3,9 @@ import { routes, getAuthData } from '../../enums';
 import WithUserHeader from '../Cards/WithUserHeader';
 import { useSelector, useDispatch } from 'react-redux';
 import WithoutUserHeader from '../Cards/WithoutUserHeader';
-import { logOutUser } from '../../features/auth/userSlice';
+import { logOutUser } from '../../features/auth/userAuth';
 import { setSearchValue } from '../../features/productSlice';
+import { userAuth } from '../../features/auth/userAuth';
 import {
   useGetCartQuery,
   useLogoutUserMutation,
@@ -13,9 +14,13 @@ import {
 function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = getAuthData('user');
+  const { user, loading, error, isAuthenticated } = useSelector(
+    (state) => state.auth,
+  );
 
-  const { data: cart = [] } = useGetCartQuery();
+  const { data: cart = [] } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const [logout] = useLogoutUserMutation();
 
   const logoutHandler = async () => {

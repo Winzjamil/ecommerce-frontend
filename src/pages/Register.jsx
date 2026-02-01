@@ -1,18 +1,17 @@
 import Form from '../components/Form';
 import Input from '../components/Input';
 import { useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useForm } from '../components/Hooks';
-import { userAuth } from '../features/auth/userSlice';
 import { routes, SELLER_ACCESS } from '../enums';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa6';
+import { useRegisterMutation } from '../features/shop/shopApi';
 
 function Register() {
-  const ref = useRef();
-  const dispatch = useDispatch();
+  const profileRef = useRef();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [registerUser, { error, isSuccess }] = useRegisterMutation();
 
   const {
     formData,
@@ -44,17 +43,11 @@ function Register() {
         formPayload.append('profile', file);
       });
 
-      for (let [key, value] of formPayload.entries()) {
-        console.log('key', key, '>>>>>>>> value', value);
-      }
-
       try {
-        await dispatch(
-          userAuth({ type: 'register', credentials: formPayload })
-        ).unwrap();
+        await registerUser(formPayload).unwrap();
         alert('Thanks, you are now registered');
         navigate(routes.LOGIN);
-        ref.current.value = null;
+        profileRef.current.value = null;
         setPreview([]);
       } catch (err) {
         console.error('error saving data', err);
@@ -182,7 +175,7 @@ function Register() {
             id="File"
             onChange={changeHandler}
             accept="image/*"
-            ref={ref}
+            ref={profileRef}
             className="p-2 hidden rounded-md cursor-pointer   "
           />
 

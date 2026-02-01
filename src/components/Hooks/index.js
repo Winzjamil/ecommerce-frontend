@@ -64,6 +64,7 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
     const errors = {};
 
     for (const key in rules) {
+      // to skip if form has no key in rules key
       if (!(key in formData)) continue;
 
       const value = formData[key];
@@ -107,7 +108,7 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
       processedValue = value
         .split(' ')
         .map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
         )
         .join(' ');
     } else if (name === 'size' && value) {
@@ -117,7 +118,7 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
     } else if (type === 'file') {
       const selectedFiles = Array.from(files);
       const reviews = await Promise.all(
-        selectedFiles.map((file) => fileToBase64(file))
+        selectedFiles.map((file) => fileToBase64(file)),
       );
 
       setFormData((prev) => ({
@@ -154,3 +155,143 @@ export const useForm = ({ initialVal = {}, onSubmit, type = 'login' }) => {
     setPreview,
   };
 };
+// import React, { useState } from 'react';
+// import { Modal, Button, Form, Input, Checkbox, Select, Radio } from 'antd';
+// import { Formik, Field, Form as FormikForm, ErrorMessage } from 'formik';
+// import * as Yup from 'yup';
+
+// const { Option } = Select;
+
+// export default function FormikAntModal() {
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+
+//   // Initial values for Formik
+//   const initialValues = {
+//     name: '',
+//     email: '',
+//     gender: '',
+//     country: '',
+//     agree: false,
+//   };
+
+//   // Validation schema using Yup
+//   const validationSchema = Yup.object({
+//     name: Yup.string().required('Name is required'),
+//     email: Yup.string().email('Invalid email').required('Email is required'),
+//     gender: Yup.string().required('Gender is required'),
+//     country: Yup.string().required('Country is required'),
+//     agree: Yup.boolean().oneOf([true], 'You must agree'),
+//   });
+
+//   // Submit handler
+//   const onSubmit = (values, { resetForm }) => {
+//     console.log('Form submitted:', values);
+//     setIsModalOpen(false);
+//     resetForm();
+//   };
+
+//   return (
+//     <div>
+//       <Button type="primary" onClick={() => setIsModalOpen(true)}>
+//         Open Form Modal
+//       </Button>
+
+//       <Modal
+//         title="Signup Form"
+//         open={isModalOpen}
+//         onCancel={() => setIsModalOpen(false)}
+//         footer={null} // We'll use Formik submit button
+//       >
+//         <Formik
+//           initialValues={initialValues}
+//           validationSchema={validationSchema}
+//           onSubmit={onSubmit}
+//         >
+//           {({ values, setFieldValue }) => (
+//             <FormikForm>
+//               {/* Name */}
+//               <div style={{ marginBottom: 12 }}>
+//                 <label>Name:</label>
+//                 <Field name="name" as={Input} />
+//                 <div style={{ color: 'red' }}>
+//                   <ErrorMessage name="name" />
+//                 </div>
+//               </div>
+
+//               {/* Email */}
+//               <div style={{ marginBottom: 12 }}>
+//                 <label>Email:</label>
+//                 <Field name="email" as={Input} />
+//                 <div style={{ color: 'red' }}>
+//                   <ErrorMessage name="email" />
+//                 </div>
+//               </div>
+
+//               {/* Gender (Radio) */}
+//               <div style={{ marginBottom: 12 }}>
+//                 <label>Gender:</label>
+//                 <Field name="gender">
+//                   {({ field }) => (
+//                     <Radio.Group
+//                       {...field}
+//                       onChange={(e) => setFieldValue('gender', e.target.value)}
+//                     >
+//                       <Radio value="male">Male</Radio>
+//                       <Radio value="female">Female</Radio>
+//                     </Radio.Group>
+//                   )}
+//                 </Field>
+//                 <div style={{ color: 'red' }}>
+//                   <ErrorMessage name="gender" />
+//                 </div>
+//               </div>
+
+//               {/* Country (Select) */}
+//               <div style={{ marginBottom: 12 }}>
+//                 <label>Country:</label>
+//                 <Field name="country">
+//                   {({ field }) => (
+//                     <Select
+//                       {...field}
+//                       style={{ width: '100%' }}
+//                       onChange={(value) => setFieldValue('country', value)}
+//                     >
+//                       <Option value="usa">USA</Option>
+//                       <Option value="uk">UK</Option>
+//                       <Option value="philippines">Philippines</Option>
+//                     </Select>
+//                   )}
+//                 </Field>
+//                 <div style={{ color: 'red' }}>
+//                   <ErrorMessage name="country" />
+//                 </div>
+//               </div>
+
+//               {/* Agree (Checkbox) */}
+//               <div style={{ marginBottom: 12 }}>
+//                 <Field name="agree">
+//                   {({ field }) => (
+//                     <Checkbox
+//                       checked={field.value}
+//                       onChange={(e) => setFieldValue('agree', e.target.checked)}
+//                     >
+//                       I agree to terms
+//                     </Checkbox>
+//                   )}
+//                 </Field>
+//                 <div style={{ color: 'red' }}>
+//                   <ErrorMessage name="agree" />
+//                 </div>
+//               </div>
+
+//               {/* Submit Button */}
+//               <Button type="primary" htmlType="submit" block>
+//                 Submit
+//               </Button>
+//             </FormikForm>
+//           )}
+//         </Formik>
+//       </Modal>
+//     </div>
+//   );
+// }

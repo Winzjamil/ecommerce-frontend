@@ -8,13 +8,25 @@ import {
 import ProductList from './ProductList';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { paymentMethods, routes } from '../enums';
 import CartCard from '../components/Cards/CartCard';
 
 function Carts() {
-  const { data: carts = [] } = useGetCartQuery();
-  console.log('carts', carts);
-  const { data: address = [] } = useFetchAddressQuery();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  console.log(
+    'is authenticated',
+    isAuthenticated,
+    'USERRRRRR>>>>>>>>>>>>>>>>>>.',
+    user,
+  );
+  const { data: carts = [] } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
+  const { data: address = [] } = useFetchAddressQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const [subTotal, setSubTotal] = useState(0);
   const [remove] = useRemoveFromCartMutation();
   const [update] = useUpdateCartItemMutation();
@@ -46,7 +58,7 @@ function Carts() {
     }
     if (updatedItem.quantity === 0) {
       const confirmDel = window.confirm(
-        'Are you sure  to remove this item from your cart?'
+        'Are you sure  to remove this item from your cart?',
       );
 
       if (confirmDel) {
@@ -94,7 +106,9 @@ function Carts() {
 
   const handleChange = (id) => {
     setItemCheck((prev) =>
-      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((itemId) => itemId !== id)
+        : [...prev, id],
     );
   };
 
@@ -128,7 +142,7 @@ function Carts() {
       alert('Order placed successfully!');
 
       carts.filter(
-        (cart) => cart._id !== selectedItems.map((item) => item._id)
+        (cart) => cart._id !== selectedItems.map((item) => item._id),
       );
 
       setItemCheck([]);

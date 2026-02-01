@@ -6,7 +6,7 @@ import {
   FaFacebook,
   FaEnvelope,
 } from 'react-icons/fa6';
-import { userAuth } from '../features/auth/userSlice';
+import { userAuth, fetchProfile } from '../features/auth/userAuth';
 import { useDispatch } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -24,23 +24,21 @@ function LoginForm() {
 
   const { formData, changeHandler, submitHandler, errors } = useForm({
     initialVal: { email: '', password: '' },
-    type: 'login',
     onSubmit: async ({ formData }) => {
       try {
-        const res = await dispatch(
-          userAuth({ type: 'login', credentials: formData })
-        ).unwrap();
-
-        alert(` Welcome ${res.user.userName} `);
-        if (res.user.role == SELLER_ACCESS) {
+        await dispatch(userAuth(formData)).unwrap();
+        const data = await dispatch(fetchProfile()).unwrap();
+        console.log('user', data);
+        alert(` Welcome ${data.user.userName} `);
+        if (data.user.role == SELLER_ACCESS) {
           navigate(routes.ADD_PRODUCT);
-        } else if (res.user.role === ADMIN_ACCESS) {
+        } else if (data.user.role === ADMIN_ACCESS) {
           navigate(routes.ADMIN_DASHBOARD);
         } else {
           navigate(routes.HOME);
         }
       } catch (err) {
-        const message = err?.message || err;
+        const message = err?.message || 'something went wrong';
         setError(message);
         setTimeout(() => {
           setError(null);
@@ -62,7 +60,11 @@ function LoginForm() {
         <FaArrowLeft />
       </NavLink>
 
-      <Form onSubmit={submitHandler}>
+      <Form
+        onSubmit={submitHandler}
+        header="WELCOME BACK"
+        subHeader="continue with your existing account"
+      >
         <div className=" flex gap-3 flex-wrap  ">
           <Input
             label="Email"

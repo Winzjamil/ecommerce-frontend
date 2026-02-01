@@ -1,6 +1,13 @@
 import { apiSlice } from '../../services/apiSlice';
 export const shopApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    register: builder.mutation({
+      query: (data) => ({
+        url: '/register',
+        method: 'POST',
+        body: data,
+      }),
+    }),
     getProducts: builder.query({
       query: () => '/product_list',
       transformResponse: (response) => response.data || [],
@@ -158,6 +165,7 @@ export const shopApi = apiSlice.injectEndpoints({
   }),
 });
 export const {
+  useRegisterMutation,
   useGetProductsQuery,
   useGetUserProductsQuery,
   useAddProductMutation,

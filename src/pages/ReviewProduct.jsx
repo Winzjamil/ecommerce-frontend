@@ -5,12 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { cartHandler } from '../components/reusable_function';
 import CartConfirmation from '../components/CartConfirmation';
 import { useGetProductsQuery, useGetCartQuery } from '../features/shop/shopApi';
+import { useSelector } from 'react-redux';
 
 function ReviewProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = getAuthData('user');
-  const { data: carts = [] } = useGetCartQuery();
+  const { user, isAuthenticated, error } = useSelector((state) => state.auth);
+  const { data: carts = [] } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const { data: products = [] } = useGetProductsQuery();
 
   const [singleItem, setSingleItem] = useState({});

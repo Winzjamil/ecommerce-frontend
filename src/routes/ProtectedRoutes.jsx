@@ -1,13 +1,11 @@
 import { Navigate } from 'react-router-dom';
-import { routes, getAuthData } from '../enums';
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const token = getAuthData('token');
-  const user = getAuthData('user');
-  const isAuthenticated = !!token;
-  if (!isAuthenticated) return <Navigate to={routes.LOGIN} replace />;
+import { routes } from '../enums';
 
+import { useSelector } from 'react-redux';
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  if (!isAuthenticated) return <Navigate to={routes.LOGIN} replace />;
   if (allowedRoles && !allowedRoles.includes(user.role))
-    // is to check if the user role is allowed to access the page
     return <Navigate to={routes.HOME} replace />;
 
   return children;

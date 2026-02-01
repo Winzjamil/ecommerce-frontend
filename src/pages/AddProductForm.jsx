@@ -18,12 +18,15 @@ import { useRef, useState } from 'react';
 import { FaAsterisk } from 'react-icons/fa6';
 import { useForm } from '../components/Hooks';
 import ProductTableCard from '../components/Cards/ProductTableCard';
+import { useSelector } from 'react-redux';
 
 function AddProductForm() {
-  const user = getAuthData('user');
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const fileInputRef = useRef(null);
 
-  const { data: product = [] } = useGetUserProductsQuery();
+  const { data: product = [] } = useGetUserProductsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   const [edit, setEdit] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -31,16 +34,16 @@ function AddProductForm() {
 
   const prodCopy = [...product];
   const clothingCat = prodCopy.filter(
-    (p) => p.category === PRODUCT_CETEGORIES.clothing
+    (p) => p.category === PRODUCT_CETEGORIES.clothing,
   );
 
   const toyCat = prodCopy.filter((p) => p.category === PRODUCT_CETEGORIES.toys);
   const elecCat = prodCopy.filter(
-    (p) => p.category === PRODUCT_CETEGORIES.electronic
+    (p) => p.category === PRODUCT_CETEGORIES.electronic,
   );
 
   const forCat = prodCopy.filter(
-    (p) => p.category === PRODUCT_CETEGORIES.forniture
+    (p) => p.category === PRODUCT_CETEGORIES.forniture,
   );
 
   const [addProduct] = useAddProductMutation();
@@ -84,7 +87,7 @@ function AddProductForm() {
       });
 
       (formData.images || []).forEach((file) =>
-        formPayload.append('images', file)
+        formPayload.append('images', file),
       );
 
       if (edit) {
@@ -103,7 +106,7 @@ function AddProductForm() {
 
   const removeItem = async (itemId) => {
     const confirmDelete = window.confirm(
-      'Are you sure you want to delete this product?'
+      'Are you sure you want to delete this product?',
     );
     if (!confirmDelete) return;
     try {

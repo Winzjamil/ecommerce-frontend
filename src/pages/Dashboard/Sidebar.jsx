@@ -4,27 +4,23 @@ import { getAuthData, SELLER_ACCESS } from '../../enums';
 import { RxAvatar } from 'react-icons/rx';
 import { ADMIN_ACCESS } from '../../enums';
 import NavBar from './admin/NavBar';
+import { useSelector } from 'react-redux';
 function Sidebar() {
-  const loginUser = getAuthData('user');
-  // const user = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   return (
     <aside className="w-full flex   h-screen text-white flex-col bg-stone-600 p-2 ">
       <div className="flex self-end w-full items-center text-xs max-w-25 gap-1 p-1  bg-gray-700 rounded ">
-        {loginUser.profile ? (
-          <Img img={loginUser.profile} />
-        ) : (
-          <RxAvatar size={20} />
-        )}
+        {user?.profile ? <Img img={user.profile} /> : <RxAvatar size={20} />}
         <div className=" flex flex-col p-1 border-l flex-wrap items-center ">
-          <span>{loginUser?.userName || null}</span>
+          <span>{user?.userName || null}</span>
           <button className="bg-black/40 px-2 py-0.5 cursor-pointer rounded ">
             Edit
           </button>
         </div>
       </div>
       <nav className=" w-full max-w-40 mt-20 text-center flex text-sm  flex-col gap-1">
-        {loginUser && loginUser.role === ADMIN_ACCESS ? (
+        {user && user.role === ADMIN_ACCESS ? (
           <NavBar />
         ) : (
           <div className="hidden md:flex flex-col gap-2 ">
@@ -40,7 +36,7 @@ function Sidebar() {
             >
               Orders
             </NavLink>
-            {loginUser.role === SELLER_ACCESS ? null : (
+            {user.role === SELLER_ACCESS ? null : (
               <NavLink
                 to="address"
                 className=" p-1 rounded hover:bg-black/40 transition "

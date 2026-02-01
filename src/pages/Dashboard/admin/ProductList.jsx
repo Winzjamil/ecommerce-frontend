@@ -4,9 +4,13 @@ import {
   useGetProductsQuery,
   useAdminRemoveProductMutation,
 } from '../../../features/shop/shopApi';
+import { useSelector } from 'react-redux';
 
 function ProductList() {
-  const { data: items = [] } = useGetProductsQuery();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { data: items = [] } = useGetProductsQuery(undefined, {
+    skip: !isAuthent,
+  });
   const [remove] = useAdminRemoveProductMutation();
   const removeHandle = async (id) => {
     const item = items.find((item) => item._id === id);

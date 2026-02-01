@@ -2,15 +2,15 @@ import { useState, useRef } from 'react';
 import { routes } from '../enums';
 import Form from '../components/Form';
 import Input from '../components/Input';
-import { useDispatch } from 'react-redux';
+import { useRegisterMutation } from '../features/shop/shopApi';
 import { useForm } from '../components/Hooks';
-import { userAuth } from '../features/auth/userSlice';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa6';
 
 function SignUp() {
+  const [registerUser, { error, isSuccess }] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
-  const dispatch = useDispatch();
+
   const navigate = useNavigate();
   const profileRef = useRef(null);
   const {
@@ -30,7 +30,6 @@ function SignUp() {
     },
 
     onSubmit: async ({ formData }) => {
-      console.log();
       const formPayload = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         if (key !== 'profile') {
@@ -41,14 +40,9 @@ function SignUp() {
       formData.profile?.forEach((file) => {
         formPayload.append('profile', file);
       });
-      for (let [key, value] of formPayload.entries()) {
-        console.log('key', key, '>>>>>>>> value', value);
-      }
 
       try {
-        await dispatch(
-          userAuth({ type: 'register', credentials: formPayload })
-        ).unwrap();
+        await registerUser(formPayload).unwrap();
         alert('Thanks, you are now registered');
         profileRef.current.value = null;
         setPreview([]);
