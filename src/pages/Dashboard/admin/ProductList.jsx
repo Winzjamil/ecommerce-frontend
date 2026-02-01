@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 function ProductList() {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { data: items = [] } = useGetProductsQuery(undefined, {
-    skip: !isAuthent,
+    skip: !isAuthenticated,
   });
   const [remove] = useAdminRemoveProductMutation();
   const removeHandle = async (id) => {
